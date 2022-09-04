@@ -14,7 +14,7 @@ const Physics = (entities, { touches, time, dispatch }) => {
       }
 
       hadTouches = true;
-      Matter.Body.applyForce(rocket, rocket.position, { x: 0.00, y: -0.08 });
+      Matter.Body.applyForce(rocket, rocket.position, { x: 0.00, y: -0.1 });
     }
   });
 

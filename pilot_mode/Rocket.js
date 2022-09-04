@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { View, Image } from "react-native";
-import Images from '../assets/Images';
 
 export default class Rocket extends Component {
     render() {
@@ -8,9 +7,8 @@ export default class Rocket extends Component {
         const height = this.props.body.bounds.max.y - this.props.body.bounds.min.y;
         const x = this.props.body.position.x - width / 2;
         const y = this.props.body.position.y - height / 2;
-
-
-        let image = Images['rocket'];
+        let image = require('../assets/img/rocket.png');
+        
         return (
             <Image
                 style={{

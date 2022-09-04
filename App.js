@@ -8,6 +8,7 @@ import Physics from './pilot_mode/Physics';
 import Wall from './pilot_mode/Wall';
 import CorrectWord from './pilot_mode/CorrectWord';
 import IncorrectWord from './pilot_mode/IncorrectWord';
+import Translation from './pilot_mode/Translations';
 
 export default class App extends Component {
   constructor(props) {
@@ -16,7 +17,8 @@ export default class App extends Component {
     this.state = {
       running: true,
       score: 0,
-      lives: 3
+      lives: 3,
+      targetWord: Translation.GetWord()
     };
 
     this.gameEngine = null;
@@ -30,7 +32,7 @@ export default class App extends Component {
     let world = engine.world;
     world.gravity.y = 0.0;
 
-    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 50, 50);
+    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 1.2, Constants.MAX_HEIGHT / 3, 50, 50, { isStatic: true });
@@ -44,6 +46,15 @@ export default class App extends Component {
       // If rocket gets correct word, it gets a point
       if (Matter.Collision.collides(rocket, correctWord) != null) {
         this.gameEngine.dispatch({ type: "score" });
+        Matter.World.remove(world, [correctWord]);
+        Matter.World.remove(world, [incorrectWord]);
+      }
+
+      // If rocket gets correct word, it gets a point
+      if (Matter.Collision.collides(rocket, incorrectWord) != null) {
+        this.gameEngine.dispatch({ type: "life-lost" });
+        Matter.World.remove(world, [correctWord]);
+        Matter.World.remove(world, [incorrectWord]);
       }
     });
 
@@ -58,11 +69,19 @@ export default class App extends Component {
   }
 
   onEvent = (e) => {
-    if (e.type === "game-over") {
-      //Alert.alert("Game Over");
+    if (e.type === "life-lost") {
       this.setState({
-        running: false
-      });
+        lives: this.state.lives - 1
+      })
+
+      if (this.state.lives <= 0) {
+        //Alert.alert("Game Over");
+        this.setState({
+          running: false,
+          score: 0,
+          lives: 3
+        });
+      }
     } else if (e.type === "score") {
       this.setState({
         score: this.state.score + 1
@@ -80,7 +99,7 @@ export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Image source={Images.background} style={styles.backgroundImage} resizeMode="stretch" />
+        <Image source={require('./assets/img/background.png')} style={styles.backgroundImage} resizeMode="stretch" />
         <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}
@@ -89,6 +108,7 @@ export default class App extends Component {
           onEvent={this.onEvent}
           entities={this.entities}>
         </GameEngine>
+        <Text style={styles.targetWord}>{this.state.targetWord}</Text>
         <Text style={styles.score}>{this.state.score}</Text>
         <Text style={styles.lives}>{this.state.lives}/3</Text>
         {!this.state.running && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
@@ -149,6 +169,17 @@ const styles = StyleSheet.create({
     fontSize: 40,
     top: 50,
     left: '10%',
+    textShadowColor: '#444444',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 2,
+    fontFamily: 'Arial'
+  },
+  targetWord: {
+    position: 'absolute',
+    color: 'white',
+    fontSize: 40,
+    top: 50,
+    left: '43%',
     textShadowColor: '#444444',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 2,
