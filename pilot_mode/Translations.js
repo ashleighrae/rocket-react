@@ -16,40 +16,42 @@ initializeApp(firebaseConfig);
 
 const db = getDatabase();
 const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
-let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+let randomWord = "";
+let translatedWord = "";
+let incorrectWord = "";
+let wrongRandomWord = "";
 
 const translation = {
     GetWord: function () {
-        const reference = ref(db, '/topics/Food/' + randomWord + "/Word");
-        let data = "";
-        onValue(reference, (snapshot) => {
-            data = snapshot.val();
-
-        });
-        return data;
+        randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+        if (randomWord.length <= 0) {
+            this.GetWord();
+        }
+        return randomWord;
     },
     GetCorrectTranslation: function () {
-        const correctRef = ref(db, '/topics/Food/' + randomWord + '/Translation');
-        let translatedWord = "";
-        onValue(correctRef, (snapshot) => {
-            translatedWord = snapshot.val();
+        if (randomWord.length <= 0) {
+            GetCorrectTranslation();
+        } else {
+            let correctRef = ref(db, '/topics/Food/' + randomWord + '/Translation');
+            onValue(correctRef, (snapshot) => {
+                translatedWord = snapshot.val();
 
-        });
+            });
+        }
         return translatedWord;
     },
     GetIncorrectTranslation: function () {
-        let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
-        if (wrongRandomWord === randomWord) {
+        wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
+        if (wrongRandomWord === randomWord || wrongRandomWord.length <= 0) {
             this.GetIncorrectTranslation();
         } else {
-            const incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
-            let incorrectWord = "";
+            let incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
             onValue(incorrectRef, (snapshot) => {
                 incorrectWord = snapshot.val();
-
             });
-            return incorrectWord;
         }
+        return incorrectWord;
     }
 }
 

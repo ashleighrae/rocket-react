@@ -20,7 +20,9 @@ export default class App extends Component {
       lives: 3,
       targetWord: Translation.GetWord(),
       correctTranslation: Translation.GetCorrectTranslation(),
-      incorrectTranslation: Translation.GetIncorrectTranslation()
+      incorrectTranslation: Translation.GetIncorrectTranslation(),
+      rightAnswer: true,
+      gameOver: false
     };
 
     this.gameEngine = null;
@@ -62,7 +64,7 @@ export default class App extends Component {
       rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "white", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
       incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: this.state.incorrectTranslation, renderer: IncorrectWord }
     }
   }
@@ -70,29 +72,37 @@ export default class App extends Component {
   onEvent = (e) => {
     if (e.type === "life-lost") {
       this.setState({
-        lives: this.state.lives - 1
-      })
+        lives: this.state.lives - 1,
+        rightAnswer: false,
+        running: false,
+      });
 
       if (this.state.lives <= 0) {
-        //Alert.alert("Game Over");
         this.setState({
+          gameOver: true,
           running: false,
           score: 0,
-          lives: 3
+          lives: 3,
         });
       }
     } else if (e.type === "score") {
       this.setState({
-        score: this.state.score + 1
-      })
+        score: this.state.score + 1,
+        rightAnswer: true,
+        running: false
+      });
     }
   }
 
   reset = () => {
-    this.gameEngine.swap(this.setupWorld());
     this.setState({
-      running: true
-    });
+      running: true,
+      targetWord: Translation.GetWord(),
+      correctTranslation: Translation.GetCorrectTranslation(),
+      incorrectTranslation: Translation.GetIncorrectTranslation(),
+      gameOver: false
+    }, () => this.gameEngine.swap(this.setupWorld())
+    );
   }
 
   render() {
@@ -110,9 +120,19 @@ export default class App extends Component {
         <Text style={styles.targetWord}>{this.state.targetWord}</Text>
         <Text style={styles.score}>{this.state.score}</Text>
         <Text style={styles.lives}>{this.state.lives}/3</Text>
-        {!this.state.running && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
             <Text style={styles.gameOverText}>Game Over</Text>
+          </View>
+        </TouchableOpacity>}
+        {!this.state.running && this.state.rightAnswer && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+          <View style={styles.fullScreen}>
+            <Text style={styles.gameOverText}>Correct! {this.state.targetWord} = {this.state.correctTranslation}</Text>
+          </View>
+        </TouchableOpacity>}
+        {!this.state.running && !this.state.rightAnswer && !this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+          <View style={styles.fullScreen}>
+            <Text style={styles.gameOverText}>Incorrect! {this.state.targetWord} = {this.state.correctTranslation}</Text>
           </View>
         </TouchableOpacity>}
       </View>
