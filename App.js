@@ -18,7 +18,9 @@ export default class App extends Component {
       running: true,
       score: 0,
       lives: 3,
-      targetWord: Translation.GetWord()
+      targetWord: Translation.GetWord(),
+      correctTranslation: Translation.GetCorrectTranslation(),
+      incorrectTranslation: Translation.GetIncorrectTranslation()
     };
 
     this.gameEngine = null;
@@ -48,10 +50,7 @@ export default class App extends Component {
         this.gameEngine.dispatch({ type: "score" });
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
-      }
-
-      // If rocket gets correct word, it gets a point
-      if (Matter.Collision.collides(rocket, incorrectWord) != null) {
+      } else if (Matter.Collision.collides(rocket, incorrectWord) != null) {
         this.gameEngine.dispatch({ type: "life-lost" });
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
@@ -63,8 +62,8 @@ export default class App extends Component {
       rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "white", renderer: CorrectWord },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", renderer: IncorrectWord }
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "white", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: this.state.incorrectTranslation, renderer: IncorrectWord }
     }
   }
 

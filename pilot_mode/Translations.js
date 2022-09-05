@@ -17,33 +17,20 @@ initializeApp(firebaseConfig);
 const db = getDatabase();
 const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
 let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
-let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
-const reference = ref(db, '/topics/Food/' + randomWord + "/Word");
-const wrongRef = ref(db, '/topics/Food/' + wrongRandomWord + "/Translation");
-let data = "";
-let translatedWord = "";
-let incorrectWord = "";
 
 const translation = {
     GetWord: function () {
+        const reference = ref(db, '/topics/Food/' + randomWord + "/Word");
+        let data = "";
         onValue(reference, (snapshot) => {
             data = snapshot.val();
 
         });
         return data;
     },
-    GetWrongWord: function () {
-        if (wrongRandomWord != randomWord) {
-            const wrongRef = ref(db, '/topics/Food/' + wrongRandomWord + "/Translation");
-            onValue(wrongRef, (snapshot) => {
-                incorrectWord = snapshot.val();
-            });
-        } else {
-            this.GetWrongWord();
-        }        
-    },
     GetCorrectTranslation: function () {
-        const correctRef = ref(db, '/topics/Food/' + randomWord + "/Translation");
+        const correctRef = ref(db, '/topics/Food/' + randomWord + '/Translation');
+        let translatedWord = "";
         onValue(correctRef, (snapshot) => {
             translatedWord = snapshot.val();
 
@@ -51,8 +38,18 @@ const translation = {
         return translatedWord;
     },
     GetIncorrectTranslation: function () {
-        this.GetWrongWord();
-        return incorrectWord;
+        let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
+        if (wrongRandomWord === randomWord) {
+            this.GetIncorrectTranslation();
+        } else {
+            const incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
+            let incorrectWord = "";
+            onValue(incorrectRef, (snapshot) => {
+                incorrectWord = snapshot.val();
+
+            });
+            return incorrectWord;
+        }
     }
 }
 

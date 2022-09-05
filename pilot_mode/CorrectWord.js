@@ -20,7 +20,7 @@ export default class CorrectWord extends Component {
                     padding: 20,
                     backgroundColor: this.props.color
                 }}>
-                <Text>{correctWord}</Text>
+                <Text>{this.props.correctTranslation}</Text>
             </ View>
         );
     }

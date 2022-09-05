@@ -8,7 +8,7 @@ export default class IncorrectWord extends Component {
         const height = this.props.size[1];
         const x = this.props.body.position.x - width / 2;
         const y = this.props.body.position.y - height / 2;
-        const incorrectWord = translation.GetIncorrectTranslation();
+        const incorrectWord = "erdbeere";
 
         return (
             <View
@@ -20,7 +20,7 @@ export default class IncorrectWord extends Component {
                     padding: 20,
                     backgroundColor: this.props.color
                 }}>
-                    <Text>{incorrectWord}</Text>
+                    <Text>{this.props.incorrectTranslation}</Text>
             </ View>
     );
   }
