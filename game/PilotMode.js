@@ -8,7 +8,7 @@ import Physics from './Physics';
 import Wall from './Wall';
 import CorrectWord from './CorrectWord';
 import IncorrectWord from './IncorrectWord';
-import Translation from './Translations';
+import Translation from './Communication';
 
 export default class PilotGameplay extends Component {
   constructor(props) {
@@ -18,12 +18,12 @@ export default class PilotGameplay extends Component {
       running: true,
       score: 0,
       lives: 3,
-      targetWord: Translation.GetWord(),
-      correctTranslation: Translation.GetCorrectTranslation(),
-      incorrectTranslation: Translation.GetIncorrectTranslation(),
       rightAnswer: true,
       gameOver: false
     };
+
+    Translation.GetWord();
+
     this.gameEngine = null;
     this.entities = this.setupWorld();
   }
@@ -35,7 +35,7 @@ export default class PilotGameplay extends Component {
 
     let posArray = [1.2, 2, 5];
 
-    /* Randomize array using Durstenfeld shuffle algorithm */
+    /* Randomize posArray using Durstenfeld shuffle algorithm */
     for (var i = posArray.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var temp = posArray[i];
@@ -47,7 +47,7 @@ export default class PilotGameplay extends Component {
     let incorrectWordPos = posArray.pop();
 
     let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
-    let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 50, { isStatic: true });
+    let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 10, { isStatic: true });
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true });
     let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true });
@@ -79,10 +79,10 @@ export default class PilotGameplay extends Component {
     return {
       physics: { engine: engine, world: world },
       rocket: { body: rocket, renderer: Rocket },
-      floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
-      ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "black", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: this.state.incorrectTranslation, renderer: IncorrectWord }
+      floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
+      ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: Translation.GetCorrectTranslation(), renderer: CorrectWord },
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: Translation.GetIncorrectTranslation(), renderer: IncorrectWord }
     }
   }
 
@@ -112,11 +112,9 @@ export default class PilotGameplay extends Component {
   }
 
   reset = () => {
+    Translation.SetWord();
     this.setState({
       running: true,
-      targetWord: Translation.GetWord(),
-      correctTranslation: Translation.GetCorrectTranslation(),
-      incorrectTranslation: Translation.GetIncorrectTranslation(),
       gameOver: false
     }, () => this.gameEngine.swap(this.setupWorld())
     );
@@ -134,7 +132,7 @@ export default class PilotGameplay extends Component {
           onEvent={this.onEvent}
           entities={this.entities}>
         </GameEngine>
-        <Text style={styles.targetWord}>{this.state.targetWord}</Text>
+        <Text style={styles.targetWord}>{Translation.GetWord()}</Text>
         <Text style={styles.score}>{this.state.score}</Text>
         <Text style={styles.lives}>{this.state.lives}/3</Text>
         {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
@@ -144,12 +142,12 @@ export default class PilotGameplay extends Component {
         </TouchableOpacity>}
         {!this.state.running && this.state.rightAnswer && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
-            <Text style={styles.gameOverText}>Correct! {this.state.targetWord} = {this.state.correctTranslation}</Text>
+            <Text style={styles.gameOverText}>Correct! {Translation.GetWord()} = {Translation.GetCorrectTranslation()}</Text>
           </View>
         </TouchableOpacity>}
         {!this.state.running && !this.state.rightAnswer && !this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
-            <Text style={styles.gameOverText}>Incorrect! {this.state.targetWord} = {this.state.correctTranslation}</Text>
+            <Text style={styles.gameOverText}>Incorrect! {Translation.GetWord()} = {Translation.GetCorrectTranslation()}</Text>
           </View>
         </TouchableOpacity>}
       </View>

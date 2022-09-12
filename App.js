@@ -1,12 +1,16 @@
 import React, { Component } from 'react';
-import PilotGameplay from './pilot_mode/PilotGameplay';
+import PilotGameplay from './game/PilotMode';
+import GroundControl from './game/GroundControlMode';
 import { createStackNavigator } from "react-navigation-stack";
 import { createAppContainer } from "react-navigation";
 import Home from './Home';
+import Communication from './game/Communication';
 
 
 export default class App extends Component {
   render() {
+    Communication.PilotStatus(false);
+    Communication.GroundControlStatus(false);
     return (
       <AppContainer />
     );
@@ -18,9 +22,18 @@ const AppNavigator = createStackNavigator({
     screen: Home
   },
   PilotMode: {
-    screen: PilotGameplay
+    screen: PilotGameplay,
+    navigationOptions: {
+      headerShown: false,
+    }
+  },
+  GroundControlMode: {
+    screen: GroundControl,
+    navigationOptions: {
+      headerShown: false,
+    }
   }
-},{
+}, {
   initialRouteName: "Home"
 });
 

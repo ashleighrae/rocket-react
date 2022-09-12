@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, ImageBackground, Image, TouchableOpacity, Alert } from 'react-native';
+import Communication from './game/Communication';
 
 export default class Home extends Component {
     render() {
@@ -18,14 +19,20 @@ export default class Home extends Component {
                     </Image>
 
                     <TouchableOpacity
-                        onPress={() => this.props.navigation.navigate('PilotMode')}
+                        onPress={() => {
+                            Communication.PilotStatus(true);
+                            this.props.navigation.navigate('PilotMode');
+                        }}
                     >
-                        <Text style={styles.signup}>Pilot Mode</Text>
+                        <Text style={styles.signup}>Pilot</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={this.loginPressed}
+                        onPress={() => {
+                            Communication.GroundControlStatus(true);
+                            this.props.navigation.navigate('GroundControlMode');
+                        }}
                     >
-                        <Text style={styles.login}>Log In</Text>
+                        <Text style={styles.login}>Ground Control</Text>
                     </TouchableOpacity>
                 </View>
             </ImageBackground>
@@ -36,11 +43,12 @@ export default class Home extends Component {
 const styles = StyleSheet.create({
     background: {
         width: '100%',
-        height: '100%'
+        height: '100%',
+        backgroundColor: 'black'
     },
     logo: {
         width: '70%',
-        marginTop: '-15%',
+        marginTop: '-45%',
         marginLeft: '15%'
     },
     text: {
@@ -49,8 +57,8 @@ const styles = StyleSheet.create({
         marginLeft: '20%'
     },
     signup: {
-        backgroundColor: 'white',
-        color: '#3A59FF',
+        backgroundColor: '#fffdff',
+        color: '#df0772',
         width: "75%",
         borderRadius: 25,
         textAlign: 'center',
@@ -61,8 +69,8 @@ const styles = StyleSheet.create({
         marginTop: '10%'
     },
     login: {
-        backgroundColor: '#3A59FF',
-        color: 'white',
+        backgroundColor: '#fffdff',
+        color: '#df0772',
         width: "75%",
         borderRadius: 25,
         textAlign: 'center',
