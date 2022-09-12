@@ -24,23 +24,33 @@ export default class App extends Component {
       rightAnswer: true,
       gameOver: false
     };
-
     this.gameEngine = null;
-
     this.entities = this.setupWorld();
   }
-
 
   setupWorld = () => {
     let engine = Matter.Engine.create({ enableSleeping: false });
     let world = engine.world;
     world.gravity.y = 0.0;
 
+    let posArray = [1.2, 2, 5];
+
+    /* Randomize array using Durstenfeld shuffle algorithm */
+    for (var i = posArray.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = posArray[i];
+      posArray[i] = posArray[j];
+      posArray[j] = temp;
+    }
+
+    let correctWordPos = posArray.pop();
+    let incorrectWordPos = posArray.pop();
+
     let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
-    let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 1.2, Constants.MAX_HEIGHT / 3, 50, 50, { isStatic: true });
-    let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 1.2, Constants.MAX_HEIGHT / 1.2, 50, 50, { isStatic: true });
+    let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 1.2, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true });
+    let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 1.2, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true });
 
     Matter.World.add(world, [rocket, floor, ceiling, correctWord, incorrectWord]);
 
@@ -56,6 +66,13 @@ export default class App extends Component {
         this.gameEngine.dispatch({ type: "life-lost" });
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
+      }
+    });
+
+    Matter.Events.on(engine, 'afterUpdate', (event) => {
+      // If rocket misses word, loose a life
+      if (correctWord.position.x < (rocket.position.x - 100)) {
+        this.gameEngine.dispatch({ type: "life-lost" });
       }
     });
 

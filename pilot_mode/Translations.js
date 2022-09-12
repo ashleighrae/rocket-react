@@ -30,15 +30,12 @@ const translation = {
         return randomWord;
     },
     GetCorrectTranslation: function () {
-        if (randomWord.length <= 0) {
-            GetCorrectTranslation();
-        } else {
-            let correctRef = ref(db, '/topics/Food/' + randomWord + '/Translation');
-            onValue(correctRef, (snapshot) => {
-                translatedWord = snapshot.val();
+        let correctRef = ref(db, '/topics/Food/' + randomWord + '/Translation');
+        onValue(correctRef, (snapshot) => {
+            translatedWord = snapshot.val();
 
-            });
-        }
+        });
+
         return translatedWord;
     },
     GetIncorrectTranslation: function () {

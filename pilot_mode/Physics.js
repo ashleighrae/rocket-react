@@ -4,6 +4,7 @@ const Physics = (entities, { touches, time, dispatch }) => {
   let engine = entities.physics.engine;
   let rocket = entities.rocket.body;
   let world = entities.physics.world;
+  let correctWord = entities.correctWord.body;
 
   let hadTouches = false;
 
@@ -19,10 +20,10 @@ const Physics = (entities, { touches, time, dispatch }) => {
   });
 
   // if (// Word exists on other person's screen, fly to it) {
-    Matter.Body.translate(entities["correctWord"].body, { x: -1, y: 0 });
-    Matter.Body.translate(entities["incorrectWord"].body, { x: -1, y: 0 });
+  Matter.Body.translate(entities["correctWord"].body, { x: -1, y: 0 });
+  Matter.Body.translate(entities["incorrectWord"].body, { x: -1, y: 0 });
   // }
-
+  
   Matter.Engine.update(engine, time.delta);
 
   return entities;
