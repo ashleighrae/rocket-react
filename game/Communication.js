@@ -20,26 +20,24 @@ const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
 const translation = {
     SetWord: function () {
         let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
-        if (randomWord.length <= 0) {
-            this.SetWord();
-        } else {
-            const reference = ref(db, '/gameplay/');
+
+            const reference = ref(db, '/gameplay');
             update(reference, {
               word: randomWord,
             });
-        }
+        
         return randomWord;
     },
     GetWord: function () {
-        let word = "word";
-        const reference = ref(db, '/gameplay/');
+        let word = "";
+        const reference = ref(db, '/gameplay');
         onValue(reference, (snapshot) => {
             word = snapshot.val().word;
         });
         return word;
     },
     GetCorrectTranslation: function () {
-        let translatedWord = "word";
+        let translatedWord = "";
         let correctRef = ref(db, '/topics/Food/' + this.GetWord() + '/Translation');
         onValue(correctRef, (snapshot) => {
             translatedWord = snapshot.val();
@@ -63,7 +61,7 @@ const translation = {
         console.log(status);
         const reference = ref(db, '/gameplay/');
         let pilotStatus = status;
-        if (pilotStatus == true || pilotStatus == false) {
+        if (pilotStatus === true || pilotStatus === false) {
             update(reference, {
               pilot: pilotStatus,
             });
@@ -78,7 +76,7 @@ const translation = {
         console.log(status);
         const reference = ref(db, '/gameplay/');
         let gcStatus = status;
-        if (gcStatus == true || gcStatus == false) {
+        if (gcStatus === true || gcStatus === false) {
             update(reference, {
             groundcontrol: gcStatus,
             });

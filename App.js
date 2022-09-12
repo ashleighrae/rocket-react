@@ -9,8 +9,6 @@ import Communication from './game/Communication';
 
 export default class App extends Component {
   render() {
-    Communication.PilotStatus(false);
-    Communication.GroundControlStatus(false);
     return (
       <AppContainer />
     );

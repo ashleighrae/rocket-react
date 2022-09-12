@@ -22,13 +22,16 @@ export default class PilotGameplay extends Component {
       gameOver: false
     };
 
-    Translation.GetWord();
+    Translation.SetWord();
+    Translation.GetCorrectTranslation();
+    console.log("word: " + Translation.GetCorrectTranslation());
 
     this.gameEngine = null;
     this.entities = this.setupWorld();
   }
 
   setupWorld = () => {
+    Translation.GetWord();
     let engine = Matter.Engine.create({ enableSleeping: false });
     let world = engine.world;
     world.gravity.y = 0.0;
