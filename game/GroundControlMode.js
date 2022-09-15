@@ -12,7 +12,6 @@ function GroundControl() {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/word');
         onValue(reference, (snapshot) => {
-
             setWord(snapshot.val());
         });
     }, [word]);

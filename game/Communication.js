@@ -21,11 +21,11 @@ const translation = {
     SetWord: function () {
         let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
 
-            const reference = ref(db, '/gameplay');
-            update(reference, {
-              word: randomWord,
-            });
-        
+        const reference = ref(db, '/gameplay');
+        update(reference, {
+            word: randomWord,
+        });
+
         return randomWord;
     },
     GetWord: function () {
@@ -58,12 +58,11 @@ const translation = {
         return incorrectWord;
     },
     PilotStatus: function (status) {
-        console.log(status);
         const reference = ref(db, '/gameplay/');
         let pilotStatus = status;
         if (pilotStatus === true || pilotStatus === false) {
             update(reference, {
-              pilot: pilotStatus,
+                pilot: pilotStatus,
             });
         } else {
             onValue(reference, (snapshot) => {
@@ -73,12 +72,11 @@ const translation = {
         return pilotStatus;
     },
     GroundControlStatus: function (status) {
-        console.log(status);
         const reference = ref(db, '/gameplay/');
         let gcStatus = status;
         if (gcStatus === true || gcStatus === false) {
             update(reference, {
-            groundcontrol: gcStatus,
+                lives: gcStatus,
             });
         } else {
             onValue(reference, (snapshot) => {
@@ -86,6 +84,20 @@ const translation = {
             });
         }
         return gcStatus;
+    },
+    SetLives: function (lives) {
+        const reference = ref(db, '/gameplay/');
+        update(reference, {
+            lives: lives,
+        });
+        return lives;
+    },
+    SetScore: function (score) {
+        const reference = ref(db, '/gameplay/');
+        update(reference, {
+            score: score,
+        });
+        return score;
     }
 }
 

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Image, Text, TouchableOpacity } from 'react-native';
+import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
 import Matter from "matter-js";
 import { GameEngine } from "react-native-game-engine";
 import Rocket from './Rocket';
@@ -19,19 +20,66 @@ export default class PilotGameplay extends Component {
       score: 0,
       lives: 3,
       rightAnswer: true,
-      gameOver: false
+      gameOver: false,
+      targetWord: "",
+      correctTranslation: "",
+      incorrectTranslation: "",
+      worldSetup: null
     };
 
-    Translation.SetWord();
-    Translation.GetCorrectTranslation();
-    console.log("word: " + Translation.GetCorrectTranslation());
-
     this.gameEngine = null;
+    this.entities = null;
+  }
+
+  componentDidMount() {
+    // Set target word
+    this.getWord();
+  }
+
+  getWord = () => {
+    const db = getDatabase();
+    const reference = ref(db, '/gameplay/word');
+    onValue(reference, (snapshot) => {
+      this.setState({
+        targetWord: snapshot.val()
+      }, () => this.getCorrectTranslation(snapshot.val()));
+    });
+  }
+
+  getCorrectTranslation = (word) => {
+    const db = getDatabase();
+    let correctRef = ref(db, '/topics/Food/' + word + '/Translation');
+    onValue(correctRef, (snapshot) => {
+      this.setState({
+        correctTranslation: snapshot.val()
+      }, () => this.getIncorrectTranslation(snapshot.val()));
+    });
+  }
+
+  getIncorrectTranslation = (word) => {
+    const db = getDatabase();
+    const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
+    let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
+    if (wrongRandomWord === word) {
+      this.getIncorrectTranslation(word);
+    } else {
+      let incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
+      onValue(incorrectRef, (snapshot) => {
+        this.setState({
+          incorrectTranslation: snapshot.val()
+        }, () => this.initWorld());
+      });
+    }
+  }
+
+  initWorld = () => {
     this.entities = this.setupWorld();
+    this.setState({
+      worldSetup: true
+    });
   }
 
   setupWorld = () => {
-    Translation.GetWord();
     let engine = Matter.Engine.create({ enableSleeping: false });
     let world = engine.world;
     world.gravity.y = 0.0;
@@ -84,8 +132,8 @@ export default class PilotGameplay extends Component {
       rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: Translation.GetCorrectTranslation(), renderer: CorrectWord },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: Translation.GetIncorrectTranslation(), renderer: IncorrectWord }
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: this.state.incorrectTranslation, renderer: IncorrectWord }
     }
   }
 
@@ -95,7 +143,8 @@ export default class PilotGameplay extends Component {
         lives: this.state.lives - 1,
         rightAnswer: false,
         running: false,
-      });
+      }, () => Translation.SetLives(this.state.lives));
+
 
       if (this.state.lives <= 0) {
         this.setState({
@@ -104,21 +153,27 @@ export default class PilotGameplay extends Component {
           score: 0,
           lives: 3,
         });
+        Translation.SetLives(3);
+        Translation.SetScore(0);
       }
     } else if (e.type === "score") {
       this.setState({
         score: this.state.score + 1,
         rightAnswer: true,
         running: false
-      });
+      }, () => Translation.SetScore(this.state.score));
     }
   }
 
   reset = () => {
     Translation.SetWord();
+
     this.setState({
       running: true,
-      gameOver: false
+      gameOver: false,
+      targetWord: Translation.GetWord(),
+      correctTranslation: Translation.GetCorrectTranslation(),
+      incorrectTranslation: Translation.GetIncorrectTranslation()
     }, () => this.gameEngine.swap(this.setupWorld())
     );
   }
@@ -127,14 +182,14 @@ export default class PilotGameplay extends Component {
     return (
       <View style={styles.container}>
         <Image source={require('../assets/img/background.png')} style={styles.backgroundImage} resizeMode="stretch" />
-        <GameEngine
+        {this.state.worldSetup && <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}
           systems={[Physics]}
           running={this.state.running}
           onEvent={this.onEvent}
           entities={this.entities}>
-        </GameEngine>
+        </GameEngine>}
         <Text style={styles.targetWord}>{Translation.GetWord()}</Text>
         <Text style={styles.score}>{this.state.score}</Text>
         <Text style={styles.lives}>{this.state.lives}/3</Text>
@@ -242,3 +297,4 @@ const styles = StyleSheet.create({
     flex: 1
   }
 });
+
