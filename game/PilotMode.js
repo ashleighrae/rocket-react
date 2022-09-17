@@ -8,8 +8,7 @@ import Rocket from './Rocket';
 import Constants from './Constants';
 import Physics from './Physics';
 import Wall from './Wall';
-import CorrectWord from './CorrectWord';
-import IncorrectWord from './IncorrectWord';
+import Word from './Word';
 import Translation from './Communication';
 
 export default class PilotGameplay extends Component {
@@ -65,7 +64,7 @@ export default class PilotGameplay extends Component {
     onValue(correctRef, (snapshot) => {
       this.setState({
         correctTranslation: snapshot.val()
-      }, () => this.getIncorrectTranslation(snapshot.val()));
+      }, () => this.getIncorrectTranslation(word));
     });
   }
 
@@ -73,7 +72,9 @@ export default class PilotGameplay extends Component {
     const db = getDatabase();
     const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
     let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
-    if (wrongRandomWord === word) {
+    console.log("Correct Word: " + word);
+    console.log("Incorrect Word: " + wrongRandomWord);
+    if (wrongRandomWord == word) {
       this.getIncorrectTranslation(word);
     } else {
       let incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
@@ -101,7 +102,7 @@ export default class PilotGameplay extends Component {
     let world = engine.world;
     world.gravity.y = 0.0;
 
-    let posArray = [1.2, 2, 5];
+    let posArray = [1.2, 2.4, 5];
 
     /* Randomize posArray using Durstenfeld shuffle algorithm */
     for (var i = posArray.length - 1; i > 0; i--) {
@@ -114,9 +115,9 @@ export default class PilotGameplay extends Component {
     let correctWordPos = posArray.pop();
     let incorrectWordPos = posArray.pop();
 
-    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
+    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50, { isSensor: true });
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 10, { isStatic: true });
-    let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
+    let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true }, { isSensor: false });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true });
     let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true });
 
@@ -127,11 +128,14 @@ export default class PilotGameplay extends Component {
 
       // If rocket gets correct word, it gets a point
       if (Matter.Collision.collides(rocket, correctWord) != null) {
-        this.gameEngine.dispatch({ type: "score" });
-        Matter.World.remove(world, [correctWord]);
-        Matter.World.remove(world, [incorrectWord]);
+        Matter.Body.setStatic(correctWord, false);
+        Matter.Body.setStatic(incorrectWord, false);
+        setTimeout(() => {
+          this.gameEngine.dispatch({ type: "score" })
+        }, 1000);
+
       } else if (Matter.Collision.collides(rocket, incorrectWord) != null) {
-        this.gameEngine.dispatch({ type: "life-lost" });
+        this.gameEngine.dispatch({ type: "life-lost" })
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
       }
@@ -149,8 +153,8 @@ export default class PilotGameplay extends Component {
       rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], color: "green", correctTranslation: this.state.correctTranslation, renderer: CorrectWord },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], color: "white", incorrectTranslation: this.state.incorrectTranslation, renderer: IncorrectWord }
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.correctTranslation, renderer: Word },
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.incorrectTranslation, renderer: Word }
     }
   }
 
@@ -203,8 +207,8 @@ export default class PilotGameplay extends Component {
           entities={this.entities}>
         </GameEngine>}
         <Text style={styles.targetWord}>{Translation.GetWord()}</Text>
-        <Text style={styles.score}>{this.state.score}</Text>
-        <Text style={styles.lives}>{this.state.lives}/3</Text>
+        <Text style={styles.score}>Score: {this.state.score}</Text>
+        <Text style={styles.lives}>Lives: {this.state.lives}/3</Text>
         <TouchableOpacity onPress={() => {
           this.props.navigation.navigate('ModeSelection');
         }} style={styles.close}>
@@ -212,17 +216,23 @@ export default class PilotGameplay extends Component {
         </TouchableOpacity>
         {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
-            <Text style={styles.gameOverText}>Game Over</Text>
+            <View style={styles.popup}>
+              <Text style={styles.gameover}>GAME OVER</Text>
+            </View>
           </View>
         </TouchableOpacity>}
         {!this.state.running && this.state.rightAnswer && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
-            <Text style={styles.gameOverText}>Correct! {Translation.GetWord()} = {Translation.GetCorrectTranslation()}</Text>
+            <View style={styles.popup}>
+              <Text style={styles.correct}>CORRECT</Text>
+            </View>
           </View>
         </TouchableOpacity>}
         {!this.state.running && !this.state.rightAnswer && !this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
-            <Text style={styles.gameOverText}>Incorrect! {Translation.GetWord()} = {Translation.GetCorrectTranslation()}</Text>
+            <View style={styles.popup}>
+              <Text style={styles.incorrect}>TRY AGAIN</Text>
+            </View>
           </View>
         </TouchableOpacity>}
       </View>
@@ -251,13 +261,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  gameOverText: {
-    color: 'white',
-    fontSize: 48
+  correct: {
+    color: '#4CCA51',
+    fontSize: 40,
+    fontWeight: 'bold',
   },
-  gameOverSubText: {
-    color: 'white',
-    fontSize: 24
+  incorrect: {
+    color: '#CA4C4C',
+    fontSize: 40,
+    fontWeight: 'bold'
+  },
+  gameover: {
+    color: '#3E3264',
+    fontSize: 40,
+    fontWeight: 'bold'
+  },
+  popup: {
+    width: "80%",
+    height: '10%',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white'
   },
   fullScreen: {
     position: 'absolute',
@@ -265,31 +290,32 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'black',
-    opacity: 0.8,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center'
   },
   score: {
     position: 'absolute',
     color: 'white',
-    fontSize: 40,
+    fontSize: 26,
     top: 50,
-    left: '10%'
+    right: '5%',
+    fontWeight: 'bold'
+  },
+  lives: {
+    position: 'absolute',
+    color: 'white',
+    fontSize: 26,
+    top: 85,
+    right: '5%',
+    fontWeight: 'bold'
   },
   targetWord: {
     position: 'absolute',
     color: 'white',
     fontSize: 40,
-    top: 50,
+    bottom: 50,
     left: '43%'
-  },
-  lives: {
-    position: 'absolute',
-    color: 'white',
-    fontSize: 40,
-    top: 60,
-    left: '80%'
   },
   fullScreenButton: {
     position: 'absolute',
@@ -305,7 +331,7 @@ const styles = StyleSheet.create({
     color: 'white',
     padding: '1%',
     top: 60,
-    right: '85%',
+    left: '5%',
     borderRadius: '100',
     justifyContent: 'center',
     alignItems: 'center'
