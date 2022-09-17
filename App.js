@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PilotGameplay from './game/PilotMode';
 import GroundControl from './game/GroundControlMode';
+import ModeSelection from './ModeSelection';
 import { createStackNavigator } from "react-navigation-stack";
 import { createAppContainer } from "react-navigation";
 import Home from './Home';
@@ -17,7 +18,16 @@ export default class App extends Component {
 
 const AppNavigator = createStackNavigator({
   Home: {
-    screen: Home
+    screen: Home,
+    navigationOptions: {
+      headerShown: false,
+    }
+  },
+  ModeSelection: {
+    screen: ModeSelection,    
+    navigationOptions: {
+      headerShown: false,
+    }
   },
   PilotMode: {
     screen: PilotGameplay,
