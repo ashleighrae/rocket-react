@@ -6,7 +6,7 @@ export default class Home extends Component {
     render() {
         return (
             <View style={styles.background}>
-                <Text style={styles.signup}>Select a mode:</Text>
+                <Text style={styles.modeheader}>Select a mode:</Text>
 
                 <TouchableOpacity
                     onPress={() => {
@@ -39,23 +39,22 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         alignItems: 'center'
     },
-    logo: {
-        width: '70%',
-        marginTop: '-45%',
-        marginLeft: '15%'
-    },
-    text: {
-        color: 'white',
-        marginTop: '-45%',
-        marginLeft: '20%'
+    modeheader: {
+        fontWeight: 'bold',
+        fontSize: 24,
+        width: '95%',
+        marginTop: '25%',
+        marginLeft: '15%',
+        color: '#000000',
+        textAlign: 'left'
     },
     startbutton: {
-        width: "75%",
+        width: "80%",
         borderRadius: 250,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '50%',
-        backgroundColor: '#FE546F'
+        marginTop: '8%',
+        backgroundColor: '#3E3264'
     },
     start: {
         color: '#FFFDFF',

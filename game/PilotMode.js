@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Image, Text, TouchableOpacity } from 'react-native';
 import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Matter from "matter-js";
 import { GameEngine } from "react-native-game-engine";
 import Rocket from './Rocket';
@@ -32,18 +33,30 @@ export default class PilotGameplay extends Component {
   }
 
   componentDidMount() {
-    // Set target word
+    // Setup words / database
     this.getWord();
   }
 
   getWord = () => {
     const db = getDatabase();
-    const reference = ref(db, '/gameplay/word');
-    onValue(reference, (snapshot) => {
-      this.setState({
-        targetWord: snapshot.val()
-      }, () => this.getCorrectTranslation(snapshot.val()));
-    });
+    const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
+    let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+
+    const randReference = ref(db, '/gameplay');
+    update(randReference, {
+      word: randomWord,
+    }).then(() => {
+      const reference = ref(db, '/gameplay/word');
+      onValue(reference, (snapshot) => {
+        this.setState({
+          targetWord: snapshot.val()
+        }, () => this.getCorrectTranslation(snapshot.val()));
+      });
+    })
+      .catch((error) => {
+        // The write failed...
+      });
+
   }
 
   getCorrectTranslation = (word) => {
@@ -73,10 +86,14 @@ export default class PilotGameplay extends Component {
   }
 
   initWorld = () => {
-    this.entities = this.setupWorld();
-    this.setState({
-      worldSetup: true
-    });
+    if (!this.state.worldSetup) {
+      this.entities = this.setupWorld();
+      this.setState({
+        worldSetup: true
+      });
+    } else {
+      this.gameEngine.swap(this.setupWorld());
+    }
   }
 
   setupWorld = () => {
@@ -166,16 +183,11 @@ export default class PilotGameplay extends Component {
   }
 
   reset = () => {
-    Translation.SetWord();
-
+    this.getWord();
     this.setState({
       running: true,
       gameOver: false,
-      targetWord: Translation.GetWord(),
-      correctTranslation: Translation.GetCorrectTranslation(),
-      incorrectTranslation: Translation.GetIncorrectTranslation()
-    }, () => this.gameEngine.swap(this.setupWorld())
-    );
+    });
   }
 
   render() {
@@ -193,6 +205,11 @@ export default class PilotGameplay extends Component {
         <Text style={styles.targetWord}>{Translation.GetWord()}</Text>
         <Text style={styles.score}>{this.state.score}</Text>
         <Text style={styles.lives}>{this.state.lives}/3</Text>
+        <TouchableOpacity onPress={() => {
+          this.props.navigation.navigate('ModeSelection');
+        }} style={styles.close}>
+          <Icon name={'close'} color='white' size='30' />
+        </TouchableOpacity>
         {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
           <View style={styles.fullScreen}>
             <Text style={styles.gameOverText}>Game Over</Text>
@@ -236,13 +253,11 @@ const styles = StyleSheet.create({
   },
   gameOverText: {
     color: 'white',
-    fontSize: 48,
-    fontFamily: 'Arial'
+    fontSize: 48
   },
   gameOverSubText: {
     color: 'white',
-    fontSize: 24,
-    fontFamily: 'Arial'
+    fontSize: 24
   },
   fullScreen: {
     position: 'absolute',
@@ -260,33 +275,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 40,
     top: 50,
-    left: '10%',
-    textShadowColor: '#444444',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 2,
-    fontFamily: 'Arial'
+    left: '10%'
   },
   targetWord: {
     position: 'absolute',
     color: 'white',
     fontSize: 40,
     top: 50,
-    left: '43%',
-    textShadowColor: '#444444',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 2,
-    fontFamily: 'Arial'
+    left: '43%'
   },
   lives: {
     position: 'absolute',
     color: 'white',
     fontSize: 40,
     top: 60,
-    left: '80%',
-    textShadowColor: '#444444',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 2,
-    fontFamily: 'Arial'
+    left: '80%'
   },
   fullScreenButton: {
     position: 'absolute',
@@ -295,6 +298,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flex: 1
+  },
+  close: {
+    backgroundColor: '#FE546F',
+    position: 'absolute',
+    color: 'white',
+    padding: '1%',
+    top: 60,
+    right: '85%',
+    borderRadius: '100',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });
 

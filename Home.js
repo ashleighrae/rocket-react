@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: '70%',
-        marginTop: '-10%',
+        marginTop: '-8%',
     },
     logoimg: {
         width: '50%',
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
         color: '#3E3264'
     },
     startbutton: {
-        width: "75%",
+        width: "80%",
         borderRadius: 250,
         justifyContent: 'center',
         alignItems: 'center',

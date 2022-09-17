@@ -26,7 +26,12 @@ const AppNavigator = createStackNavigator({
   ModeSelection: {
     screen: ModeSelection,    
     navigationOptions: {
-      headerShown: false,
+      title: '',
+      headerTintColor: 'black',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
+      
     }
   },
   PilotMode: {
