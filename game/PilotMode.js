@@ -230,6 +230,16 @@ export default class PilotGameplay extends Component {
   };
 
   render() {
+
+    var lives = [];
+
+    for (let i = 0; i < this.state.lives; i++) {
+
+      lives.push(
+        <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch"/>
+      )
+    }
+
     return (
       <View style={styles.container}>
         <Image source={require('../assets/img/background.png')} style={styles.backgroundImage} />
@@ -242,7 +252,9 @@ export default class PilotGameplay extends Component {
           entities={this.entities}>
         </GameEngine>}
         <Text style={styles.score}>Score: {this.state.score}</Text>
-        <Text style={styles.lives}>Lives: {this.state.lives}/3</Text>
+        <View style={styles.lives}>
+          {lives}
+        </View>
         <TouchableOpacity onPress={() => {
           this.props.navigation.navigate('ModeSelection');
           Translation.PilotStatus(false);
@@ -346,9 +358,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     color: 'white',
     fontSize: 26,
-    top: 85,
+    top: 90,
     right: '5%',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    flexDirection: 'row-reverse',
+    width: 75
+  },
+  heart: {
+    width: 25,
+    height: 20,
+    resizeMode: 'contain'
   },
   targetWord: {
     position: 'absolute',
