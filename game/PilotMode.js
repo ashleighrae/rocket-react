@@ -24,7 +24,8 @@ export default class PilotGameplay extends Component {
       targetWord: "",
       correctTranslation: "",
       incorrectTranslation: "",
-      worldSetup: null
+      worldSetup: null,
+      wordList: []
     };
 
     this.gameEngine = null;
@@ -38,24 +39,38 @@ export default class PilotGameplay extends Component {
 
   getWord = () => {
     const db = getDatabase();
-    const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
-    let randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+    const dbRef = ref(db, '/topics/Food');
+    let listWords = [];
+    onValue(dbRef, (snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        const childKey = childSnapshot.key;
+        listWords.push(childKey);
+      }, this.setState({
+        wordList: listWords
+      }));
+      this.getWordRef();
+    }, 
+    {
+      onlyOnce: true
+    });
+  }
 
+  getWordRef = () => {
+    console.log(this.state.wordList);
+    const db = getDatabase();
+    const randomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
     const randReference = ref(db, '/gameplay');
     update(randReference, {
       word: randomWord,
-    }).then(() => {
-      const reference = ref(db, '/gameplay/word');
-      onValue(reference, (snapshot) => {
-        this.setState({
-          targetWord: snapshot.val()
-        }, () => this.getCorrectTranslation(snapshot.val()));
-      });
+    })
+    .then(() => {
+      this.setState({
+        targetWord: randomWord
+      }, () => this.getCorrectTranslation(randomWord));
     })
       .catch((error) => {
         // The write failed...
       });
-
   }
 
   getCorrectTranslation = (word) => {
@@ -70,8 +85,7 @@ export default class PilotGameplay extends Component {
 
   getIncorrectTranslation = (word) => {
     const db = getDatabase();
-    const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
-    let wrongRandomWord = allWords[Math.floor(Math.random() * allWords.length)];
+    let wrongRandomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
     console.log("Correct Word: " + word);
     console.log("Incorrect Word: " + wrongRandomWord);
     if (wrongRandomWord == word) {
