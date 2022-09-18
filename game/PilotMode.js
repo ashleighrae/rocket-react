@@ -25,7 +25,9 @@ export default class PilotGameplay extends Component {
       correctTranslation: "",
       incorrectTranslation: "",
       worldSetup: null,
-      wordList: []
+      wordList: [],
+      roundOver: false,
+      modalOpen: false
     };
 
     this.gameEngine = null;
@@ -49,25 +51,24 @@ export default class PilotGameplay extends Component {
         wordList: listWords
       }));
       this.getWordRef();
-    }, 
-    {
-      onlyOnce: true
-    });
+    },
+      {
+        onlyOnce: true
+      });
   }
 
   getWordRef = () => {
-    console.log(this.state.wordList);
     const db = getDatabase();
     const randomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
     const randReference = ref(db, '/gameplay');
     update(randReference, {
       word: randomWord,
     })
-    .then(() => {
-      this.setState({
-        targetWord: randomWord
-      }, () => this.getCorrectTranslation(randomWord));
-    })
+      .then(() => {
+        this.setState({
+          targetWord: randomWord
+        }, () => this.getCorrectTranslation(randomWord));
+      })
       .catch((error) => {
         // The write failed...
       });
@@ -86,8 +87,6 @@ export default class PilotGameplay extends Component {
   getIncorrectTranslation = (word) => {
     const db = getDatabase();
     let wrongRandomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
-    console.log("Correct Word: " + word);
-    console.log("Incorrect Word: " + wrongRandomWord);
     if (wrongRandomWord == word) {
       this.getIncorrectTranslation(word);
     } else {
@@ -107,7 +106,12 @@ export default class PilotGameplay extends Component {
         worldSetup: true
       });
     } else {
-      this.gameEngine.swap(this.setupWorld());
+      this.setState({
+        running: true,
+        gameOver: false,
+        roundOver: false,
+        modalOpen: false
+      }, () => this.gameEngine.swap(this.setupWorld()));
     }
   }
 
@@ -129,11 +133,11 @@ export default class PilotGameplay extends Component {
     let correctWordPos = posArray.pop();
     let incorrectWordPos = posArray.pop();
 
-    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50, { isSensor: true });
+    let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 10, { isStatic: true });
-    let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true }, { isSensor: false });
-    let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true });
-    let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true });
+    let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
+    let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true, isSensor: true });
+    let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true, isSensor: true });
 
     Matter.World.add(world, [rocket, floor, ceiling, correctWord, incorrectWord]);
 
@@ -141,36 +145,45 @@ export default class PilotGameplay extends Component {
       var pairs = event.pairs;
 
       // If rocket gets correct word, it gets a point
-      if (Matter.Collision.collides(rocket, correctWord) != null) {
-        Matter.Body.setStatic(correctWord, false);
-        Matter.Body.setStatic(incorrectWord, false);
-        setTimeout(() => {
-          this.gameEngine.dispatch({ type: "score" })
-        }, 1000);
-
-      } else if (Matter.Collision.collides(rocket, incorrectWord) != null) {
-        this.gameEngine.dispatch({ type: "life-lost" })
+      if (Matter.Collision.collides(rocket, correctWord) != null && !this.state.roundOver) {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
+        this.setState({
+          roundOver: true
+        }, () => this.gameEngine.dispatch({ type: "score" }));
+      } else if (Matter.Collision.collides(rocket, incorrectWord) != null && !this.state.roundOver) {
+        Matter.World.remove(world, [correctWord]);
+        Matter.World.remove(world, [incorrectWord]);
+        this.setState({
+          roundOver: true
+        }, () => this.gameEngine.dispatch({ type: "life-lost" }));
       }
     });
 
     Matter.Events.on(engine, 'afterUpdate', (event) => {
       // If rocket misses word, loose a life
-      if (correctWord.position.x < (rocket.position.x - 100)) {
-        this.gameEngine.dispatch({ type: "life-lost" });
+      if (correctWord.position.x < (rocket.position.x - 100) && !this.state.roundOver) {
+        Matter.World.remove(world, [correctWord]);
+        Matter.World.remove(world, [incorrectWord]);
+        this.setState({
+          roundOver: true
+        }, () => this.gameEngine.dispatch({ type: "life-lost" }));
       }
     });
+
+    const galaxyList = [require("../assets/img/galaxyOne.png"), require("../assets/img/galaxyTwo.png"), require("../assets/img/galaxyThree.png")];
 
     return {
       physics: { engine: engine, world: world },
       rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
-      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.correctTranslation, renderer: Word },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.incorrectTranslation, renderer: Word }
+      correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.correctTranslation, ranGalaxy: galaxyList[Math.floor(Math.random() * galaxyList.length)], renderer: Word },
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.incorrectTranslation, ranGalaxy: galaxyList[Math.floor(Math.random() * galaxyList.length)], renderer: Word }
     }
   }
+
+
 
   onEvent = (e) => {
     if (e.type === "life-lost") {
@@ -190,6 +203,8 @@ export default class PilotGameplay extends Component {
         });
         Translation.SetLives(3);
         Translation.SetScore(0);
+      } else {
+        this.handleOpen();
       }
     } else if (e.type === "score") {
       this.setState({
@@ -197,21 +212,20 @@ export default class PilotGameplay extends Component {
         rightAnswer: true,
         running: false
       }, () => Translation.SetScore(this.state.score));
+      this.handleOpen();
     }
   }
 
-  reset = () => {
-    this.getWord();
+  handleOpen = () => {
     this.setState({
-      running: true,
-      gameOver: false,
-    });
-  }
+      modalOpen: true
+    }, () => this.getWord());
+  };
 
   render() {
     return (
       <View style={styles.container}>
-        <Image source={require('../assets/img/background.png')} style={styles.backgroundImage} resizeMode="stretch" />
+        <Image source={require('../assets/img/background.png')} style={styles.backgroundImage}  />
         {this.state.worldSetup && <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}
@@ -228,27 +242,28 @@ export default class PilotGameplay extends Component {
         }} style={styles.close}>
           <Icon name={'close'} color='white' size='30' />
         </TouchableOpacity>
-        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => {this.getWord()}}> 
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.gameover}>GAME OVER</Text>
+              <Text style={styles.gameoverText}>Press here to start a new game</Text>
             </View>
           </View>
         </TouchableOpacity>}
-        {!this.state.running && this.state.rightAnswer && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+        {this.state.modalOpen && !this.state.running && this.state.rightAnswer && <View style={styles.fullScreenButton}>
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.correct}>CORRECT</Text>
             </View>
           </View>
-        </TouchableOpacity>}
-        {!this.state.running && !this.state.rightAnswer && !this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={this.reset}>
+        </View>}
+        {this.state.modalOpen && !this.state.running && !this.state.rightAnswer && !this.state.gameOver && <View style={styles.fullScreenButton}>
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.incorrect}>TRY AGAIN</Text>
             </View>
           </View>
-        </TouchableOpacity>}
+        </View>}
       </View>
     );
   }
@@ -286,9 +301,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   gameover: {
-    color: '#3E3264',
+    color: '#df0772',
     fontSize: 40,
     fontWeight: 'bold'
+  },
+  gameoverText: {
+    color: '#3E3264',
+    fontSize: 18
   },
   popup: {
     width: "80%",

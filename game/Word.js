@@ -7,7 +7,8 @@ export default class CorrectWord extends Component {
         const height = this.props.size[1];
         const x = this.props.body.position.x - width / 2;
         const y = this.props.body.position.y - height / 2;
-        const image = require('../assets/img/meteor.png');
+
+        const image = this.props.ranGalaxy;
 
         return (
 
@@ -19,16 +20,16 @@ export default class CorrectWord extends Component {
                 justifyContent: "center",
                 width: 'auto',
                 height: 'auto',
-                padding: 20
+                padding: 30
             }}>
                 <View
                     style={{
-                        padding: 8,
+                        padding: 5,
                         fontSize: 20,
                         backgroundColor: 'white',
                         color: 'black',
                         fontWeight: 'bold',
-                        borderRadius: 10
+                        borderRadius: 20
                     }}>
                     <Text style={{
                         fontSize: 16,
