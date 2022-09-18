@@ -1,9 +1,29 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ImageBackground, Image, TouchableOpacity, Alert } from 'react-native';
+import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
 import Communication from './game/Communication';
 
-export default class Home extends Component {
-    render() {
+function Home(props)  {
+
+    const [groundControlStatus, setGroundControlStatus] = useState();
+    const [pilotStatus, setPilotStatus] = useState();
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/groundcontrol');
+        onValue(reference, (snapshot) => {
+            setGroundControlStatus(snapshot.val());
+        });
+    }, [groundControlStatus]);
+    
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/pilot');
+        onValue(reference, (snapshot) => {
+            setPilotStatus(snapshot.val());
+        });
+    }, [pilotStatus]);
+
         return (
             <View style={styles.background}>
                 <Text style={styles.modeheader}>Select a mode:</Text>
@@ -11,26 +31,26 @@ export default class Home extends Component {
                 <TouchableOpacity
                     onPress={() => {
                         Communication.PilotStatus(true);
-                        this.props.navigation.navigate('PilotMode');
+                    props.navigation.navigate('PilotMode');
                     }}
-                    style={styles.startbutton}
-                    disabled={Communication.PilotStatus()}
+                    style={[styles.startbutton, pilotStatus && styles.disabled]}
+                    disabled={pilotStatus}
                 >
                     <Text style={styles.start}>Pilot</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => {
                         Communication.GroundControlStatus(true);
-                        this.props.navigation.navigate('GroundControlMode');
+                        props.navigation.navigate('GroundControlMode');
                     }}
-                    style={styles.startbutton}
-                    disabled={Communication.GroundControlStatus()}
+                    style={[styles.startbutton, groundControlStatus && styles.disabled]}
+                    disabled={groundControlStatus}
                 >
                     <Text style={styles.start}>Ground Control</Text>
                 </TouchableOpacity>
             </View>
         )
-    }
+    
 }
 
 const styles = StyleSheet.create({
@@ -64,5 +84,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         padding: "5%",
         fontSize: 16,
+    },
+    disabled: {
+        backgroundColor: '#D5D4D9'
     }
 });
+
+export default Home;
