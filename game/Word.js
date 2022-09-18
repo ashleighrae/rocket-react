@@ -20,7 +20,7 @@ export default class CorrectWord extends Component {
                 justifyContent: "center",
                 width: 'auto',
                 height: 'auto',
-                padding: 30
+                padding: 40
             }}>
                 <View
                     style={{

@@ -3,8 +3,9 @@ import { StyleSheet, View, Image, Text, TouchableOpacity, AppState } from 'react
 import Constants from './Constants';
 import Communication from './Communication';
 import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-function GroundControl() {
+function GroundControl(props) {
 
     const [word, setWord] = useState("");
 
@@ -18,7 +19,14 @@ function GroundControl() {
 
     return (
         <View style={styles.container}>
+            <Image source={require('../assets/img/controlroom.png')} style={styles.backgroundImage} resizeMode="stretch"/>
             <Text style={styles.targetWord}>{word}</Text>
+            <TouchableOpacity onPress={() => {
+                Communication.GroundControlStatus(false);
+          props.navigation.navigate('ModeSelection');
+        }} style={styles.close}>
+          <Icon name={'close'} color='white' size='30' />
+        </TouchableOpacity>
         </View>
     );
 
@@ -28,6 +36,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        backgroundColor: 'white',
+        alignItems: 'center'
     },
     backgroundImage: {
         position: 'absolute',
@@ -45,68 +55,27 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
     },
-    gameOverText: {
-        color: 'black',
-        fontSize: 48,
-        fontFamily: 'Arial'
-    },
-    gameOverSubText: {
-        color: 'white',
-        fontSize: 24,
-        fontFamily: 'Arial'
-    },
-    fullScreen: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'black',
-        opacity: 0.8,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    score: {
-        position: 'absolute',
-        color: 'white',
-        fontSize: 40,
-        top: 50,
-        left: '10%',
-        textShadowColor: '#444444',
-        textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 2,
-        fontFamily: 'Arial'
-    },
     targetWord: {
         position: 'absolute',
         color: 'black',
         fontSize: 40,
-        top: 50,
-        left: '43%',
+        top: 100,
         textShadowColor: '#444444',
         textShadowOffset: { width: 2, height: 2 },
         textShadowRadius: 2,
         fontFamily: 'Arial'
     },
-    lives: {
+    close: {
+        backgroundColor: '#FE546F',
         position: 'absolute',
         color: 'white',
-        fontSize: 40,
+        padding: '1%',
         top: 60,
-        left: '80%',
-        textShadowColor: '#444444',
-        textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 2,
-        fontFamily: 'Arial'
-    },
-    fullScreenButton: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flex: 1
-    }
+        left: '5%',
+        borderRadius: '100',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }
 });
 
 export default GroundControl;

@@ -14,6 +14,7 @@ export default class Home extends Component {
                         this.props.navigation.navigate('PilotMode');
                     }}
                     style={styles.startbutton}
+                    disabled={Communication.PilotStatus()}
                 >
                     <Text style={styles.start}>Pilot</Text>
                 </TouchableOpacity>
@@ -23,6 +24,7 @@ export default class Home extends Component {
                         this.props.navigation.navigate('GroundControlMode');
                     }}
                     style={styles.startbutton}
+                    disabled={Communication.GroundControlStatus()}
                 >
                     <Text style={styles.start}>Ground Control</Text>
                 </TouchableOpacity>

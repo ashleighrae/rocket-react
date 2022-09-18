@@ -27,7 +27,8 @@ export default class PilotGameplay extends Component {
       worldSetup: null,
       wordList: [],
       roundOver: false,
-      modalOpen: false
+      modalOpen: false,
+      rocketHeight: null
     };
 
     this.gameEngine = null;
@@ -132,8 +133,10 @@ export default class PilotGameplay extends Component {
 
     let correctWordPos = posArray.pop();
     let incorrectWordPos = posArray.pop();
-
     let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
+    if (this.state.rocketHeight) {
+      rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, this.state.rocketHeight, 70, 50);
+    }
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 10, { isStatic: true });
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true, isSensor: true });
@@ -149,13 +152,15 @@ export default class PilotGameplay extends Component {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
         this.setState({
-          roundOver: true
+          roundOver: true,
+          rocketHeight: rocket.position.y
         }, () => this.gameEngine.dispatch({ type: "score" }));
       } else if (Matter.Collision.collides(rocket, incorrectWord) != null && !this.state.roundOver) {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
         this.setState({
-          roundOver: true
+          roundOver: true,
+          rocketHeight: rocket.position.y
         }, () => this.gameEngine.dispatch({ type: "life-lost" }));
       }
     });
@@ -166,7 +171,8 @@ export default class PilotGameplay extends Component {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
         this.setState({
-          roundOver: true
+          roundOver: true,
+          rocketHeight: rocket.position.y
         }, () => this.gameEngine.dispatch({ type: "life-lost" }));
       }
     });
@@ -175,11 +181,11 @@ export default class PilotGameplay extends Component {
 
     return {
       physics: { engine: engine, world: world },
-      rocket: { body: rocket, renderer: Rocket },
       floor: { body: floor, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
       ceiling: { body: ceiling, size: [Constants.MAX_WIDTH, 50], color: "#352a55", renderer: Wall },
       correctWord: { body: correctWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.correctTranslation, ranGalaxy: galaxyList[Math.floor(Math.random() * galaxyList.length)], renderer: Word },
-      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.incorrectTranslation, ranGalaxy: galaxyList[Math.floor(Math.random() * galaxyList.length)], renderer: Word }
+      incorrectWord: { body: incorrectWord, size: [Constants.WORD_WIDTH, 50], translation: this.state.incorrectTranslation, ranGalaxy: galaxyList[Math.floor(Math.random() * galaxyList.length)], renderer: Word },
+      rocket: { body: rocket, renderer: Rocket }
     }
   }
 
@@ -200,6 +206,7 @@ export default class PilotGameplay extends Component {
           running: false,
           score: 0,
           lives: 3,
+          rocketHeight: null
         });
         Translation.SetLives(3);
         Translation.SetScore(0);
@@ -225,7 +232,7 @@ export default class PilotGameplay extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Image source={require('../assets/img/background.png')} style={styles.backgroundImage}  />
+        <Image source={require('../assets/img/background.png')} style={styles.backgroundImage} />
         {this.state.worldSetup && <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}
@@ -234,15 +241,15 @@ export default class PilotGameplay extends Component {
           onEvent={this.onEvent}
           entities={this.entities}>
         </GameEngine>}
-        <Text style={styles.targetWord}>{Translation.GetWord()}</Text>
         <Text style={styles.score}>Score: {this.state.score}</Text>
         <Text style={styles.lives}>Lives: {this.state.lives}/3</Text>
         <TouchableOpacity onPress={() => {
           this.props.navigation.navigate('ModeSelection');
+          Translation.PilotStatus(false);
         }} style={styles.close}>
           <Icon name={'close'} color='white' size='30' />
         </TouchableOpacity>
-        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => {this.getWord()}}> 
+        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.getWord() }}>
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.gameover}>GAME OVER</Text>

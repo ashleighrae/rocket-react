@@ -76,7 +76,7 @@ const translation = {
         let gcStatus = status;
         if (gcStatus === true || gcStatus === false) {
             update(reference, {
-                lives: gcStatus,
+                groundcontrol: gcStatus,
             });
         } else {
             onValue(reference, (snapshot) => {
