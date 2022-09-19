@@ -2,11 +2,30 @@ import React, { Component, useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ImageBackground, Image, TouchableOpacity, Alert } from 'react-native';
 import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
 import Communication from './game/Communication';
+import SelectList from 'react-native-dropdown-select-list';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-function Home(props)  {
+function Home(props) {
 
     const [groundControlStatus, setGroundControlStatus] = useState();
     const [pilotStatus, setPilotStatus] = useState();
+    const [selectedTopic, setSelectedTopic] = useState();
+    const [topicList, setTopicList] = useState({ key: "", value: "" });
+
+    useEffect(() => {
+        const db = getDatabase();
+        const dbRef = ref(db, '/topics/');
+        let listWords = [];
+        onValue(dbRef, (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const childKey = { key: childSnapshot.id, value: childSnapshot.key };
+                listWords.push(childKey);
+            }, setTopicList(listWords));
+        },
+            {
+                onlyOnce: true
+            });
+    }, []);
 
     useEffect(() => {
         const db = getDatabase();
@@ -15,7 +34,7 @@ function Home(props)  {
             setGroundControlStatus(snapshot.val());
         });
     }, [groundControlStatus]);
-    
+
     useEffect(() => {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/pilot');
@@ -24,33 +43,49 @@ function Home(props)  {
         });
     }, [pilotStatus]);
 
-        return (
-            <View style={styles.background}>
-                <Text style={styles.modeheader}>Select a mode:</Text>
+    return (
+        <View style={styles.background}>
+            <Text style={styles.topicHeader}>Select a topic:</Text>
+            <SelectList
+                onSelect={() => Communication.SetTopic(selectedTopic)}
+                inputStyles={styles.dropdown}
+                boxStyles={styles.boxStyles}
+                dropdownTextStyles={styles.dropdownTextStyles}
+                dropdownItemStyles={styles.dropdownItemStyles}
+                dropdownStyles={styles.dropdownStyles}
+                setSelected={setSelectedTopic}
+                data={topicList}
+                searchicon={<Icon name="book-search" size={25} color="lightgrey" style={{marginRight:10}}/>}
+                search={true}
+                placeholder="Select a topic"
+                searchPlaceholder="Search"
+            />
 
-                <TouchableOpacity
-                    onPress={() => {
-                        Communication.PilotStatus(true);
+            <Text style={styles.modeheader}>Select a mode:</Text>
+
+            <TouchableOpacity
+                onPress={() => {
+                    Communication.PilotStatus(true);
                     props.navigation.navigate('PilotMode');
-                    }}
-                    style={[styles.startbutton, pilotStatus && styles.disabled]}
-                    disabled={pilotStatus}
-                >
-                    <Text style={styles.start}>Pilot</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => {
-                        Communication.GroundControlStatus(true);
-                        props.navigation.navigate('GroundControlMode');
-                    }}
-                    style={[styles.startbutton, groundControlStatus && styles.disabled]}
-                    disabled={groundControlStatus}
-                >
-                    <Text style={styles.start}>Ground Control</Text>
-                </TouchableOpacity>
-            </View>
-        )
-    
+                }}
+                style={[styles.startbutton, pilotStatus && styles.disabled]}
+                disabled={pilotStatus}
+            >
+                <Text style={styles.start}>Pilot</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => {
+                    Communication.GroundControlStatus(true);
+                    props.navigation.navigate('GroundControlMode');
+                }}
+                style={[styles.startbutton, groundControlStatus && styles.disabled]}
+                disabled={groundControlStatus}
+            >
+                <Text style={styles.start}>Ground Control</Text>
+            </TouchableOpacity>
+        </View>
+    )
+
 }
 
 const styles = StyleSheet.create({
@@ -61,11 +96,20 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         alignItems: 'center'
     },
+    topicHeader: {
+        fontWeight: 'bold',
+        fontSize: 24,
+        width: '95%',
+        marginTop: '10%',
+        marginLeft: '15%',
+        color: '#000000',
+        textAlign: 'left'
+    },
     modeheader: {
         fontWeight: 'bold',
         fontSize: 24,
         width: '95%',
-        marginTop: '25%',
+        marginTop: '10%',
         marginLeft: '15%',
         color: '#000000',
         textAlign: 'left'
@@ -87,6 +131,22 @@ const styles = StyleSheet.create({
     },
     disabled: {
         backgroundColor: '#D5D4D9'
+    },
+    dropdown: {
+        width: "72%",
+        color: 'black',
+        textAlign: 'left',
+        fontSize: 16,
+        fontWeight: 'bold',
+        
+    },
+    boxStyles: {
+        marginTop: '8%'
+    },
+    dropdownTextStyles: {
+        color: 'black',
+        fontSize: 16,
+        fontWeight: 'bold'
     }
 });
 

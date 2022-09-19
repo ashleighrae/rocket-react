@@ -28,7 +28,8 @@ export default class PilotGameplay extends Component {
       wordList: [],
       roundOver: false,
       modalOpen: false,
-      rocketHeight: null
+      rocketHeight: null,
+      topic: ""
     };
 
     this.gameEngine = null;
@@ -42,7 +43,7 @@ export default class PilotGameplay extends Component {
 
   getWord = () => {
     const db = getDatabase();
-    const dbRef = ref(db, '/topics/Food');
+    const dbRef = ref(db, '/topics/Town');
     let listWords = [];
     onValue(dbRef, (snapshot) => {
       snapshot.forEach((childSnapshot) => {
@@ -77,7 +78,7 @@ export default class PilotGameplay extends Component {
 
   getCorrectTranslation = (word) => {
     const db = getDatabase();
-    let correctRef = ref(db, '/topics/Food/' + word + '/Translation');
+    let correctRef = ref(db, '/topics/Town/' + word + '/Translation');
     onValue(correctRef, (snapshot) => {
       this.setState({
         correctTranslation: snapshot.val()
@@ -91,7 +92,7 @@ export default class PilotGameplay extends Component {
     if (wrongRandomWord == word) {
       this.getIncorrectTranslation(word);
     } else {
-      let incorrectRef = ref(db, '/topics/Food/' + wrongRandomWord + '/Translation');
+      let incorrectRef = ref(db, '/topics/Town/' + wrongRandomWord + '/Translation');
       onValue(incorrectRef, (snapshot) => {
         this.setState({
           incorrectTranslation: snapshot.val()

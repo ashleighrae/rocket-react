@@ -98,6 +98,13 @@ const translation = {
             score: score,
         });
         return score;
+    },
+    SetTopic: function (topic) {
+        const reference = ref(db, '/gameplay/');
+        update(reference, {
+            topic: topic,
+        });
+        return topic;
     }
 }
 

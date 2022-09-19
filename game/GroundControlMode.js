@@ -10,6 +10,7 @@ function GroundControl(props) {
     const [word, setWord] = useState("");
     const [lives, setLives] = useState();
     const [score, setScore] = useState();
+    const [status, setStatus] = useState();
 
     useEffect(() => {
         const db = getDatabase();
@@ -34,6 +35,14 @@ function GroundControl(props) {
             setScore(snapshot.val());
         });
     }, [lives]);
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/status');
+        onValue(reference, (snapshot) => {
+            setStatus(snapshot.val());
+        });
+    }, [status]);
 
     let livesList = [];
     for (let i = 0; i < lives; i++) {
