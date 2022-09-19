@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     targetWord: {
         position: 'absolute',
         color: '#df0772',
-        fontSize: 50,
+        fontSize: 40,
         top: 300,
         fontWeight: 'bold'
     },

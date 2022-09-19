@@ -38,21 +38,31 @@ export default class PilotGameplay extends Component {
 
   componentDidMount() {
     // Setup words / database
-    this.getWord();
+    this.getTopic();
   }
 
-  getWord = () => {
+  getTopic = () => {
     const db = getDatabase();
-    const dbRef = ref(db, '/topics/Town');
+    let correctRef = ref(db, '/gameplay/topic');
+    onValue(correctRef, (snapshot) => {
+      this.setState({
+        topic: snapshot.val()
+      }, () => this.getWord());
+    });
+  }
+
+  getWord = (topic) => {
+    const db = getDatabase();
+    const dbRef = ref(db, '/topics/' + this.state.topic);
     let listWords = [];
     onValue(dbRef, (snapshot) => {
       snapshot.forEach((childSnapshot) => {
         const childKey = childSnapshot.key;
         listWords.push(childKey);
-      }, this.setState({
+      });
+      this.setState({
         wordList: listWords
-      }));
-      this.getWordRef();
+      }, () => this.getWordRef(listWords));
     },
       {
         onlyOnce: true
@@ -78,7 +88,7 @@ export default class PilotGameplay extends Component {
 
   getCorrectTranslation = (word) => {
     const db = getDatabase();
-    let correctRef = ref(db, '/topics/Town/' + word + '/Translation');
+    let correctRef = ref(db, '/topics/' + this.state.topic + "/" + word + '/Translation');
     onValue(correctRef, (snapshot) => {
       this.setState({
         correctTranslation: snapshot.val()
@@ -92,7 +102,7 @@ export default class PilotGameplay extends Component {
     if (wrongRandomWord == word) {
       this.getIncorrectTranslation(word);
     } else {
-      let incorrectRef = ref(db, '/topics/Town/' + wrongRandomWord + '/Translation');
+      let incorrectRef = ref(db, '/topics/' + this.state.topic + "/" + wrongRandomWord + '/Translation');
       onValue(incorrectRef, (snapshot) => {
         this.setState({
           incorrectTranslation: snapshot.val()
@@ -237,7 +247,7 @@ export default class PilotGameplay extends Component {
     for (let i = 0; i < this.state.lives; i++) {
 
       lives.push(
-        <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch" key={"heart" + i}/>
+        <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch" key={"heart" + i} />
       )
     }
 

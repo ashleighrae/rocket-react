@@ -25,7 +25,7 @@ export default class CorrectWord extends Component {
                 <View
                     style={{
                         padding: 5,
-                        fontSize: 20,
+                        fontSize: 16,
                         backgroundColor: 'white',
                         color: 'black',
                         fontWeight: 'bold',
