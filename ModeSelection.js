@@ -45,21 +45,29 @@ function Home(props) {
 
     return (
         <View style={styles.background}>
-            <Text style={styles.topicHeader}>Select a topic:</Text>
-            <SelectList
-                onSelect={() => Communication.SetTopic(selectedTopic)}
-                inputStyles={styles.dropdown}
-                boxStyles={styles.boxStyles}
-                dropdownTextStyles={styles.dropdownTextStyles}
-                dropdownItemStyles={styles.dropdownItemStyles}
-                dropdownStyles={styles.dropdownStyles}
-                setSelected={setSelectedTopic}
-                data={topicList}
-                searchicon={<Icon name="book-search" size={25} color="lightgrey" style={{marginRight:10}}/>}
-                search={true}
-                placeholder="Select a topic"
-                searchPlaceholder="Search"
-            />
+            {(!groundControlStatus && !pilotStatus) &&
+                <View>
+                    <Text style={styles.topicHeader}>Select a topic:</Text>
+                    <SelectList
+                        onSelect={() => Communication.SetTopic(selectedTopic)}
+                        inputStyles={styles.dropdown}
+                        boxStyles={styles.boxStyles}
+                        dropdownTextStyles={styles.dropdownTextStyles}
+                        dropdownItemStyles={styles.dropdownItemStyles}
+                        dropdownStyles={styles.dropdownStyles}
+                        setSelected={setSelectedTopic}
+                        data={topicList}
+                        searchicon={<Icon name="book-search" size={25} color="lightgrey" style={{ marginRight: 10 }} />}
+                        search={true}
+                        placeholder="Select a topic"
+                        searchPlaceholder="Search"
+                    />
+                </View>}
+
+                {(groundControlStatus || !pilotStatus) &&
+                <View>
+                    <Text style={styles.topicSelected}>Selected topic: <Text style={styles.topicSelectedWord}>{selectedTopic}</Text></Text>
+                </View>}
 
             <Text style={styles.modeheader}>Select a mode:</Text>
 
@@ -101,9 +109,20 @@ const styles = StyleSheet.create({
         fontSize: 24,
         width: '95%',
         marginTop: '10%',
-        marginLeft: '15%',
         color: '#000000',
         textAlign: 'left'
+    },
+    topicSelected: {
+        fontWeight: 'bold',
+        fontSize: 24,
+        width: '95%',
+        marginTop: '10%',
+        marginLeft: '-22%',
+        color: '#000000',
+        textAlign: 'left'
+    },
+    topicSelectedWord: {
+        fontWeight: 'normal'
     },
     modeheader: {
         fontWeight: 'bold',
@@ -138,7 +157,7 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         fontSize: 16,
         fontWeight: 'bold',
-        
+
     },
     boxStyles: {
         marginTop: '8%'
