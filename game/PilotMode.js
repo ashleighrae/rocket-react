@@ -177,7 +177,7 @@ export default class PilotGameplay extends Component {
       }
     });
 
-    const galaxyList = [require("../assets/img/galaxyOne.png"), require("../assets/img/galaxyTwo.png"), require("../assets/img/galaxyThree.png")];
+    const galaxyList = [require("../assets/img/galaxyOne.png"), require("../assets/img/galaxyThree.png")];
 
     return {
       physics: { engine: engine, world: world },
@@ -236,13 +236,13 @@ export default class PilotGameplay extends Component {
     for (let i = 0; i < this.state.lives; i++) {
 
       lives.push(
-        <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch"/>
+        <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch" key={"heart" + i}/>
       )
     }
 
     return (
       <View style={styles.container}>
-        <Image source={require('../assets/img/background.png')} style={styles.backgroundImage} />
+        <Image source={require('../assets/img/background.gif')} style={styles.backgroundImage} />
         {this.state.worldSetup && <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}

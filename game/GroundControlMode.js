@@ -8,6 +8,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 function GroundControl(props) {
 
     const [word, setWord] = useState("");
+    const [lives, setLives] = useState();
+    const [score, setScore] = useState();
 
     useEffect(() => {
         const db = getDatabase();
@@ -17,16 +19,44 @@ function GroundControl(props) {
         });
     }, [word]);
 
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/lives');
+        onValue(reference, (snapshot) => {
+            setLives(snapshot.val());
+        });
+    }, [lives]);
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/score');
+        onValue(reference, (snapshot) => {
+            setScore(snapshot.val());
+        });
+    }, [lives]);
+
+    let livesList = [];
+    for (let i = 0; i < lives; i++) {
+
+        livesList.push(
+            <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch" key={"heart" + i} />
+        )
+    }
+
     return (
         <View style={styles.container}>
-            <Image source={require('../assets/img/controlroom.png')} style={styles.backgroundImage} resizeMode="stretch"/>
+            <Image source={require('../assets/img/controlroom.png')} style={styles.backgroundImage} resizeMode="stretch" />
+            <Text style={styles.score}>Score: {score}</Text>
+            <View style={styles.lives}>
+                {livesList}
+            </View>
             <Text style={styles.targetWord}>{word}</Text>
             <TouchableOpacity onPress={() => {
                 Communication.GroundControlStatus(false);
-          props.navigation.navigate('ModeSelection');
-        }} style={styles.close}>
-          <Icon name={'close'} color='white' size='30' />
-        </TouchableOpacity>
+                props.navigation.navigate('ModeSelection');
+            }} style={styles.close}>
+                <Icon name={'close'} color='white' size='30' />
+            </TouchableOpacity>
         </View>
     );
 
@@ -57,13 +87,31 @@ const styles = StyleSheet.create({
     },
     targetWord: {
         position: 'absolute',
+        color: '#df0772',
+        fontSize: 50,
+        top: 300,
+        fontWeight: 'bold'
+    },
+    lives: {
+        position: 'absolute',
+        top: 115,
+        right: '21%',
+        fontWeight: 'bold',
+        flexDirection: 'row-reverse',
+        width: 75
+    },
+    heart: {
+        width: 25,
+        height: 20,
+        resizeMode: 'contain'
+    },
+    score: {
+        position: 'absolute',
         color: 'black',
-        fontSize: 40,
-        top: 100,
-        textShadowColor: '#444444',
-        textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 2,
-        fontFamily: 'Arial'
+        fontSize: 26,
+        top: 108,
+        left: '21%',
+        fontWeight: 'bold'
     },
     close: {
         backgroundColor: '#FE546F',
@@ -75,7 +123,7 @@ const styles = StyleSheet.create({
         borderRadius: '100',
         justifyContent: 'center',
         alignItems: 'center'
-      }
+    }
 });
 
 export default GroundControl;

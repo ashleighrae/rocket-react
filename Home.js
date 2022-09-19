@@ -6,7 +6,7 @@ export default class Home extends Component {
         return (
             <View style={styles.background}>
                 <Image
-                    source={require('./assets/img/logo-img.png')}
+                    source={require('./assets/img/galaxyTwo.png')}
                     style={styles.logoimg}
                     resizeMode="contain"
                 ></Image>
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: '70%',
-        marginTop: '-8%',
+        marginTop: '-25%',
     },
     logoimg: {
         width: '50%',
-        marginTop: '30%'
+        marginTop: '10%'
     },
     subheading: {
         textAlign: 'center',
