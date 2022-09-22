@@ -4,6 +4,7 @@ import Constants from './Constants';
 import Communication from './Communication';
 import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import TypeWriter from 'react-native-typewriter';
 
 function GroundControl(props) {
 
@@ -13,20 +14,14 @@ function GroundControl(props) {
     const [status, setStatus] = useState();
     const [gameOver, setGameOver] = useState();
     const [correctAnswer, setCorrectAnswer] = useState();
-
-    useEffect(() => {
-        const db = getDatabase();
-        const reference = ref(db, '/gameplay/word');
-        onValue(reference, (snapshot) => {
-            setWord(snapshot.val());
-        });
-    }, [word]);
+    const [isDeleting, setIsDeleting] = useState();
 
     useEffect(() => {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/lives');
         onValue(reference, (snapshot) => {
             setLives(snapshot.val());
+            setIsDeleting(true);
         });
         if (lives != 3) {
             setCorrectAnswer(false);
@@ -38,12 +33,22 @@ function GroundControl(props) {
         const reference = ref(db, '/gameplay/score');
         onValue(reference, (snapshot) => {
             setScore(snapshot.val());
+            setIsDeleting(true);
         });
         if (score != 0) {
             setCorrectAnswer(true);
         }
     }, [score]);
 
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/word');
+        onValue(reference, (snapshot) => {
+            setWord(snapshot.val());
+            setIsDeleting(false);
+        });
+    }, [word]);
+    
     useEffect(() => {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/status');
@@ -75,7 +80,8 @@ function GroundControl(props) {
             <View style={styles.lives}>
                 {livesList}
             </View>
-            <Text style={styles.targetWord}>{word}</Text>
+            {/* <Text style={styles.targetWord}>{word}</Text> */}
+            <TypeWriter style={styles.targetWord} typing={isDeleting ? -1 : 1} >{word}</TypeWriter>
             <TouchableOpacity onPress={() => {
                 Communication.GroundControlStatus(false);
                 props.navigation.navigate('ModeSelection');
@@ -121,8 +127,11 @@ const styles = StyleSheet.create({
         position: 'absolute',
         color: '#df0772',
         fontSize: 40,
-        top: 300,
-        fontWeight: 'bold'
+        top: 250,
+        fontWeight: 'bold',
+        width: 300,
+        textAlign: 'center',
+        whiteSpace: 'norml'
     },
     lives: {
         position: 'absolute',

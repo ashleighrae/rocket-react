@@ -34,11 +34,13 @@
     "react-native-safe-area-context": "4.3.1",
     "react-native-screens": "~3.15.0",
     "react-native-sound": "^0.11.2",
+    "react-native-typewriter": "^0.7.0",
     "react-native-vector-icons": "^9.2.0",
     "react-native-web": "~0.18.7",
     "react-navigation": "^4.4.4",
     "react-navigation-stack": "^2.10.4",
-    "sharp-cli": "^2.1.1"
+    "sharp-cli": "^2.1.1",
+    "typewriter-effect": "^2.19.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
