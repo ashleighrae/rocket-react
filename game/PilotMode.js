@@ -43,6 +43,16 @@ export default class PilotGameplay extends Component {
     this.getTopic();
   }
 
+  resetGame = () => {
+    Translation.SetLives(3);
+    Translation.SetScore(0);
+    this.setState({
+      score: 0,
+      lives: 3,
+      rocketHeight: null
+    }, () => this.getTopic());
+  }
+
   getTopic = () => {
     const db = getDatabase();
     let correctRef = ref(db, '/gameplay/topic');
@@ -218,13 +228,8 @@ export default class PilotGameplay extends Component {
         this.setState({
           gameOver: true,
           running: false,
-          score: 0,
-          lives: 3,
-          rocketHeight: null
         });
         Translation.SetGameOver(true);
-        Translation.SetLives(3);
-        Translation.SetScore(0);
       } else {
         this.handleOpen();
       }
@@ -276,7 +281,7 @@ export default class PilotGameplay extends Component {
         }} style={styles.close}>
           <Icon name={'close'} color='white' size='30' />
         </TouchableOpacity>
-        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.getTopic() }}>
+        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.resetGame() }}>
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.gameover}>GAME OVER</Text>

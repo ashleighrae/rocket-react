@@ -25,7 +25,7 @@ function Home(props) {
             {
                 onlyOnce: true
             });
-    }, [topicList]);
+    }, []);
 
     useEffect(() => {
         const db = getDatabase();

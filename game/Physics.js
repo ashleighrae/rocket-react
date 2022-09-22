@@ -15,14 +15,15 @@ const Physics = (entities, { touches, time, dispatch }) => {
       }
 
       hadTouches = true;
-      Matter.Body.applyForce(rocket, rocket.position, { x: 0.00, y: -0.1 });
+      Matter.Body.setVelocity(rocket, {
+        x: rocket.velocity.x,
+        y: -7
+      });
     }
   });
 
-  // if (// Word exists on other person's screen, fly to it) {
   Matter.Body.translate(entities["correctWord"].body, { x: -1, y: 0 });
   Matter.Body.translate(entities["incorrectWord"].body, { x: -1, y: 0 });
-  // }
   
   Matter.Engine.update(engine, time.delta);
 

@@ -14,14 +14,20 @@ function GroundControl(props) {
     const [status, setStatus] = useState();
     const [gameOver, setGameOver] = useState();
     const [correctAnswer, setCorrectAnswer] = useState();
-    const [isDeleting, setIsDeleting] = useState();
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/word');
+        onValue(reference, (snapshot) => {
+            setWord(snapshot.val());
+        });
+    }, [word]);
 
     useEffect(() => {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/lives');
         onValue(reference, (snapshot) => {
             setLives(snapshot.val());
-            setIsDeleting(true);
         });
         if (lives != 3) {
             setCorrectAnswer(false);
@@ -33,22 +39,12 @@ function GroundControl(props) {
         const reference = ref(db, '/gameplay/score');
         onValue(reference, (snapshot) => {
             setScore(snapshot.val());
-            setIsDeleting(true);
         });
         if (score != 0) {
             setCorrectAnswer(true);
         }
     }, [score]);
 
-    useEffect(() => {
-        const db = getDatabase();
-        const reference = ref(db, '/gameplay/word');
-        onValue(reference, (snapshot) => {
-            setWord(snapshot.val());
-            setIsDeleting(false);
-        });
-    }, [word]);
-    
     useEffect(() => {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/status');
@@ -81,7 +77,7 @@ function GroundControl(props) {
                 {livesList}
             </View>
             {/* <Text style={styles.targetWord}>{word}</Text> */}
-            <TypeWriter style={styles.targetWord} typing={isDeleting ? -1 : 1} >{word}</TypeWriter>
+            <TypeWriter style={styles.targetWord} typing={1}>{word}</TypeWriter>
             <TouchableOpacity onPress={() => {
                 Communication.GroundControlStatus(false);
                 props.navigation.navigate('ModeSelection');
@@ -126,10 +122,10 @@ const styles = StyleSheet.create({
     targetWord: {
         position: 'absolute',
         color: '#df0772',
-        fontSize: 40,
+        fontSize: 38,
         top: 250,
         fontWeight: 'bold',
-        width: 300,
+        width: 230,
         textAlign: 'center',
         whiteSpace: 'norml'
     },
