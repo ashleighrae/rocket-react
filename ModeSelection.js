@@ -25,7 +25,7 @@ function Home(props) {
             {
                 onlyOnce: true
             });
-    }, []);
+    }, [topicList]);
 
     useEffect(() => {
         const db = getDatabase();
@@ -42,6 +42,14 @@ function Home(props) {
             setPilotStatus(snapshot.val());
         });
     }, [pilotStatus]);
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/topic');
+        onValue(reference, (snapshot) => {
+            setSelectedTopic(snapshot.val());
+        });
+    }, [selectedTopic]);
 
     return (
         <View style={styles.background}>
@@ -64,7 +72,7 @@ function Home(props) {
                     />
                 </View>}
 
-                {(groundControlStatus || !pilotStatus) &&
+                {(groundControlStatus || pilotStatus) &&
                 <View>
                     <Text style={styles.topicSelected}>Selected topic: <Text style={styles.topicSelectedWord}>{selectedTopic}</Text></Text>
                 </View>}
@@ -117,7 +125,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         width: '95%',
         marginTop: '10%',
-        marginLeft: '-22%',
+        marginLeft: '-21%',
         color: '#000000',
         textAlign: 'left'
     },

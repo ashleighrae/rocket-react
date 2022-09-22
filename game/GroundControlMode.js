@@ -11,6 +11,8 @@ function GroundControl(props) {
     const [lives, setLives] = useState();
     const [score, setScore] = useState();
     const [status, setStatus] = useState();
+    const [gameOver, setGameOver] = useState();
+    const [correctAnswer, setCorrectAnswer] = useState();
 
     useEffect(() => {
         const db = getDatabase();
@@ -26,6 +28,9 @@ function GroundControl(props) {
         onValue(reference, (snapshot) => {
             setLives(snapshot.val());
         });
+        if (lives != 3) {
+            setCorrectAnswer(false);
+        }
     }, [lives]);
 
     useEffect(() => {
@@ -34,7 +39,10 @@ function GroundControl(props) {
         onValue(reference, (snapshot) => {
             setScore(snapshot.val());
         });
-    }, [lives]);
+        if (score != 0) {
+            setCorrectAnswer(true);
+        }
+    }, [score]);
 
     useEffect(() => {
         const db = getDatabase();
@@ -43,6 +51,14 @@ function GroundControl(props) {
             setStatus(snapshot.val());
         });
     }, [status]);
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/isGameOver');
+        onValue(reference, (snapshot) => {
+            setGameOver(snapshot.val());
+        });
+    }, [gameOver]);
 
     let livesList = [];
     for (let i = 0; i < lives; i++) {
@@ -66,6 +82,13 @@ function GroundControl(props) {
             }} style={styles.close}>
                 <Icon name={'close'} color='white' size='30' />
             </TouchableOpacity>
+            {gameOver && <View style={styles.fullScreenButton}>
+                <View style={styles.fullScreen}>
+                    <View style={styles.popup}>
+                        <Text style={styles.gameover}>GAME OVER</Text>
+                    </View>
+                </View>
+            </View>}
         </View>
     );
 
@@ -132,6 +155,41 @@ const styles = StyleSheet.create({
         borderRadius: '100',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    gameover: {
+        color: '#df0772',
+        fontSize: 40,
+        fontWeight: 'bold'
+    },
+    gameoverText: {
+        color: '#3E3264',
+        fontSize: 18
+    },
+    popup: {
+        width: "80%",
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        padding: 20
+    },
+    fullScreen: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    fullScreenButton: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flex: 1
     }
 });
 

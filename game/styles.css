@@ -1,0 +1,27 @@
+.correct {
+  animation: correct 2s;
+}
+
+.incorrect {
+  animation: incorrect 2s;
+}
+
+@keyframes correct {
+  from,
+  99% {
+    color: green;
+  }
+  to {
+    color: initial;
+  }
+}
+
+@keyframes incorrect {
+  from,
+  99% {
+    color: red;
+  }
+  to {
+    color: initial;
+  }
+}

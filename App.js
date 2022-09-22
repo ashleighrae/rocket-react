@@ -4,9 +4,8 @@ import GroundControl from './game/GroundControlMode';
 import ModeSelection from './ModeSelection';
 import { createStackNavigator } from "react-navigation-stack";
 import { createAppContainer } from "react-navigation";
-import Home from './Home';
 import Communication from './game/Communication';
-
+import Home from './Home';
 
 export default class App extends Component {
   render() {

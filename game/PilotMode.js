@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Image, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Image, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Matter from "matter-js";
@@ -31,6 +31,8 @@ export default class PilotGameplay extends Component {
       rocketHeight: null,
       topic: ""
     };
+
+    Translation.SetGameOver(false);
 
     this.gameEngine = null;
     this.entities = null;
@@ -112,6 +114,7 @@ export default class PilotGameplay extends Component {
   }
 
   initWorld = () => {
+    Translation.SetGameOver(false);
     if (!this.state.worldSetup) {
       this.entities = this.setupWorld();
       this.setState({
@@ -219,6 +222,7 @@ export default class PilotGameplay extends Component {
           lives: 3,
           rocketHeight: null
         });
+        Translation.SetGameOver(true);
         Translation.SetLives(3);
         Translation.SetScore(0);
       } else {
@@ -253,7 +257,7 @@ export default class PilotGameplay extends Component {
 
     return (
       <View style={styles.container}>
-        <Image source={require('../assets/img/background.gif')} style={styles.backgroundImage} />
+        <ImageBackground source={require('../assets/img/background.gif')} style={styles.backgroundImage} />
         {this.state.worldSetup && <GameEngine
           ref={(ref) => { this.gameEngine = ref; }}
           style={styles.gameContainer}
@@ -272,7 +276,7 @@ export default class PilotGameplay extends Component {
         }} style={styles.close}>
           <Icon name={'close'} color='white' size='30' />
         </TouchableOpacity>
-        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.getWord() }}>
+        {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.getTopic() }}>
           <View style={styles.fullScreen}>
             <View style={styles.popup}>
               <Text style={styles.gameover}>GAME OVER</Text>
@@ -341,11 +345,11 @@ const styles = StyleSheet.create({
   },
   popup: {
     width: "80%",
-    height: '10%',
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    padding: 20
   },
   fullScreen: {
     position: 'absolute',

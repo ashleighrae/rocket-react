@@ -12,7 +12,7 @@ export default class CorrectWord extends Component {
 
         return (
 
-            <ImageBackground source={image} resizeMode="cover" style={{
+            <ImageBackground source={image} resizeMode="fit" style={{
                 position: "absolute",
                 left: x,
                 top: y,
@@ -20,7 +20,7 @@ export default class CorrectWord extends Component {
                 justifyContent: "center",
                 width: 'auto',
                 height: 'auto',
-                padding: 40
+                padding: 30
             }}>
                 <View
                     style={{
