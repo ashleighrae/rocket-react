@@ -10,6 +10,7 @@ import Physics from './Physics';
 import Wall from './Wall';
 import Word from './Word';
 import Translation from './Communication';
+import { Audio } from 'expo-av';
 
 export default class PilotGameplay extends Component {
   constructor(props) {
@@ -29,7 +30,8 @@ export default class PilotGameplay extends Component {
       roundOver: false,
       modalOpen: false,
       rocketHeight: null,
-      topic: ""
+      topic: "",
+      pronunciation:""
     };
 
     Translation.SetGameOver(false);
@@ -42,6 +44,17 @@ export default class PilotGameplay extends Component {
     // Setup words / database
     this.getTopic();
   }
+
+   playSoundFile = async (uri) => {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync(
+        { uri: uri },
+        { shouldPlay: true }
+    );
+
+    console.log('Playing Sound');
+    await sound.playAsync();
+}
 
   resetGame = () => {
     Translation.SetLives(3);
@@ -82,12 +95,21 @@ export default class PilotGameplay extends Component {
   }
 
   getWordRef = () => {
-    const db = getDatabase();
     const randomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
-        this.setState({
-          correctTranslation: randomWord
-        }, () => this.getCorrectTranslation(randomWord));
+    this.setState({
+      correctTranslation: randomWord
+    }, () => this.getSound(randomWord));
 
+  }
+
+  getSound = (randomWord) => {
+    const db = getDatabase();
+    let reference = ref(db, '/topics/' + this.state.topic + "/" + randomWord + '/Pronunciation');
+    onValue(reference, (snapshot) => {
+      this.setState({
+        pronunciation: snapshot.val()
+      }, () => this.getCorrectTranslation(randomWord));
+    });
   }
 
   getCorrectTranslation = (word) => {
@@ -183,6 +205,7 @@ export default class PilotGameplay extends Component {
       if (Matter.Collision.collides(rocket, correctWord) != null && !this.state.roundOver) {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
+        this.playSoundFile(this.state.pronunciation);
         this.setState({
           roundOver: true,
           rocketHeight: rocket.position.y
