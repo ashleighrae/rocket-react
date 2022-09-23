@@ -84,18 +84,10 @@ export default class PilotGameplay extends Component {
   getWordRef = () => {
     const db = getDatabase();
     const randomWord = this.state.wordList[Math.floor(Math.random() * this.state.wordList.length)];
-    const randReference = ref(db, '/gameplay');
-    update(randReference, {
-      word: randomWord,
-    })
-      .then(() => {
         this.setState({
-          targetWord: randomWord
+          correctTranslation: randomWord
         }, () => this.getCorrectTranslation(randomWord));
-      })
-      .catch((error) => {
-        // The write failed...
-      });
+
   }
 
   getCorrectTranslation = (word) => {
@@ -103,9 +95,25 @@ export default class PilotGameplay extends Component {
     let correctRef = ref(db, '/topics/' + this.state.topic + "/" + word + '/Translation');
     onValue(correctRef, (snapshot) => {
       this.setState({
-        correctTranslation: snapshot.val()
-      }, () => this.getIncorrectTranslation(word));
+        targetWord: snapshot.val()
+      }, () => this.setTargetWord(snapshot.val(), word));
     });
+  }
+
+  setTargetWord = (word, translation) => {
+    const db = getDatabase();
+    const randReference = ref(db, '/gameplay');
+    update(randReference, {
+      word: word,
+    })
+      .then(() => {
+        this.setState({
+          correctTranslation: translation
+        }, () => this.getIncorrectTranslation(translation));
+      })
+      .catch((error) => {
+        // The write failed...
+      });
   }
 
   getIncorrectTranslation = (word) => {
@@ -114,7 +122,7 @@ export default class PilotGameplay extends Component {
     if (wrongRandomWord == word) {
       this.getIncorrectTranslation(word);
     } else {
-      let incorrectRef = ref(db, '/topics/' + this.state.topic + "/" + wrongRandomWord + '/Translation');
+      let incorrectRef = ref(db, '/topics/' + this.state.topic + "/" + wrongRandomWord + '/Word');
       onValue(incorrectRef, (snapshot) => {
         this.setState({
           incorrectTranslation: snapshot.val()
