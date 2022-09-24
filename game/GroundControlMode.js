@@ -9,6 +9,7 @@ import TypeWriter from 'react-native-typewriter';
 function GroundControl(props) {
 
     const [word, setWord] = useState("");
+    const [context, setContext] = useState("");
     const [lives, setLives] = useState();
     const [score, setScore] = useState();
     const [status, setStatus] = useState();
@@ -22,6 +23,14 @@ function GroundControl(props) {
             setWord(snapshot.val());
         });
     }, [word]);
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/context');
+        onValue(reference, (snapshot) => {
+            setContext(snapshot.val());
+        });
+    }, [context]);
 
     useEffect(() => {
         const db = getDatabase();
@@ -76,8 +85,8 @@ function GroundControl(props) {
             <View style={styles.lives}>
                 {livesList}
             </View>
-            {/* <Text style={styles.targetWord}>{word}</Text> */}
             <TypeWriter style={styles.targetWord} typing={1}>{word}</TypeWriter>
+            <TypeWriter style={styles.context} typing={1}>{context}</TypeWriter>
             <TouchableOpacity onPress={() => {
                 Communication.GroundControlStatus(false);
                 props.navigation.navigate('ModeSelection');
@@ -120,11 +129,19 @@ const styles = StyleSheet.create({
         right: 0,
     },
     targetWord: {
-        position: 'absolute',
+        // position: 'absolute',
         color: '#df0772',
         fontSize: 38,
-        top: 250,
+        marginTop: 220,
         fontWeight: 'bold',
+        width: 230,
+        textAlign: 'center',
+        whiteSpace: 'norml'
+    },
+    context: {
+        color: 'black',
+        fontSize: 20,
+        fontWeight: 'normal',
         width: 230,
         textAlign: 'center',
         whiteSpace: 'norml'

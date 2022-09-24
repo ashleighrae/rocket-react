@@ -143,7 +143,24 @@ export default class PilotGameplay extends Component {
     onValue(correctRef, (snapshot) => {
       this.setState({
         targetWord: snapshot.val()
-      }, () => this.setTargetWord(snapshot.val(), word));
+      }, () => this.setContext(snapshot.val(), word));
+    });
+  }
+
+  setContext = (word, translation) => {
+    const db = getDatabase();
+    let correctRef = ref(db, '/topics/' + this.state.topic + "/" + translation + '/Context');
+    onValue(correctRef, (snapshot) => {
+      let reference = ref(db, '/gameplay');
+      update(reference, {
+        context: snapshot.val(),
+      })
+        .then(() => {
+          this.setTargetWord(word, translation);
+        })
+        .catch((error) => {
+          // The write failed...
+        });
     });
   }
 

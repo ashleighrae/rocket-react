@@ -15,7 +15,6 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 const db = getDatabase();
-const allWords = ["Bread", "Chicken", "Fish", "Potatoes", "Yoghurt"];
 
 const translation = {
     PilotStatus: function (status) {
