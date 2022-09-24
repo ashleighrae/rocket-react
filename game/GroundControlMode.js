@@ -159,7 +159,8 @@ const styles = StyleSheet.create({
         left: '5%',
         borderRadius: '100',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        zIndex: 200
     },
     gameover: {
         color: '#df0772',

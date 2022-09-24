@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Image, Text, TouchableOpacity, ImageBackground } from 'react-native';
-import { getDatabase, ref, query, orderByChild, onValue, orderByValue, set, update } from 'firebase/database';
+import { getDatabase, ref, onValue, update } from 'firebase/database';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Matter from "matter-js";
 import { GameEngine } from "react-native-game-engine";
@@ -31,30 +31,55 @@ export default class PilotGameplay extends Component {
       modalOpen: false,
       rocketHeight: null,
       topic: "",
-      pronunciation:""
+      pronunciation: "",
+      groundControlStatus: null
     };
 
     Translation.SetGameOver(false);
+    Translation.SetLives(3);
+    Translation.SetScore(0);
 
     this.gameEngine = null;
     this.entities = null;
   }
 
   componentDidMount() {
-    // Setup words / database
     this.getTopic();
+    const db = getDatabase();
+    let correctRef = ref(db, '/gameplay/groundcontrol');
+    onValue(correctRef, (snapshot) => {
+      this.setState({
+        groundControlStatus: snapshot.val()
+      });
+    });
   }
 
-   playSoundFile = async (uri) => {
-    console.log('Loading Sound');
-    const { sound } = await Audio.Sound.createAsync(
-        { uri: uri },
-        { shouldPlay: true }
+  componentDidUpdate(previousProps, previousState) {
+    if (previousState.groundControlStatus !== this.state.groundControlStatus) {
+      if (this.state.groundControlStatus) {
+        this.resetGame();
+      } else {
+        this.setState({
+          running: false
+        });
+      }
+    }
+  }
+  playIncorrectSound = async () => {
+    const { sound } = await Audio.Sound.createAsync(require('../assets/audio/incorrect.mp3')
     );
-
-    console.log('Playing Sound');
+    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
     await sound.playAsync();
-}
+  }
+
+  playSoundFile = async (uri) => {
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: uri },
+      { shouldPlay: true }
+    );
+    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+    await sound.playAsync();
+  }
 
   resetGame = () => {
     Translation.SetLives(3);
@@ -76,7 +101,7 @@ export default class PilotGameplay extends Component {
     });
   }
 
-  getWord = (topic) => {
+  getWord = () => {
     const db = getDatabase();
     const dbRef = ref(db, '/topics/' + this.state.topic);
     let listWords = [];
@@ -195,7 +220,6 @@ export default class PilotGameplay extends Component {
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true, isSensor: true });
     let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true, isSensor: true });
-
     Matter.World.add(world, [rocket, floor, ceiling, correctWord, incorrectWord]);
 
     Matter.Events.on(engine, 'collisionStart', (event) => {
@@ -205,7 +229,6 @@ export default class PilotGameplay extends Component {
       if (Matter.Collision.collides(rocket, correctWord) != null && !this.state.roundOver) {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
-        this.playSoundFile(this.state.pronunciation);
         this.setState({
           roundOver: true,
           rocketHeight: rocket.position.y
@@ -254,6 +277,7 @@ export default class PilotGameplay extends Component {
         running: false,
       }, () => Translation.SetLives(this.state.lives));
 
+      this.playIncorrectSound();
 
       if (this.state.lives <= 0) {
         this.setState({
@@ -270,6 +294,7 @@ export default class PilotGameplay extends Component {
         rightAnswer: true,
         running: false
       }, () => Translation.SetScore(this.state.score));
+      this.playSoundFile(this.state.pronunciation);
       this.handleOpen();
     }
   }
@@ -334,6 +359,13 @@ export default class PilotGameplay extends Component {
             </View>
           </View>
         </View>}
+        {!this.state.groundControlStatus && <View style={styles.fullScreenButton}>
+          <View style={styles.fullScreen}>
+            <View style={styles.popup}>
+              <Text style={styles.gameover}>WAITING FOR PLAYER</Text>
+            </View>
+          </View>
+        </View>}
       </View>
     );
   }
@@ -373,7 +405,9 @@ const styles = StyleSheet.create({
   gameover: {
     color: '#df0772',
     fontSize: 40,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'center',
+    whiteSpace: 'norml'
   },
   gameoverText: {
     color: '#3E3264',
@@ -444,7 +478,8 @@ const styles = StyleSheet.create({
     left: '5%',
     borderRadius: '100',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 200
   }
 });
 
