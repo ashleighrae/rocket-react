@@ -15,6 +15,16 @@ function GroundControl(props) {
     const [status, setStatus] = useState();
     const [gameOver, setGameOver] = useState();
     const [correctAnswer, setCorrectAnswer] = useState();
+    const [pilotStatus, setPilotStatus] = useState();
+
+
+    useEffect(() => {
+        const db = getDatabase();
+        const reference = ref(db, '/gameplay/pilot');
+        onValue(reference, (snapshot) => {
+            setPilotStatus(snapshot.val());
+        });
+    }, [pilotStatus]);
 
     useEffect(() => {
         const db = getDatabase();
@@ -93,6 +103,13 @@ function GroundControl(props) {
             }} style={styles.close}>
                 <Icon name={'close'} color='white' size='30' />
             </TouchableOpacity>
+            {!pilotStatus && <View style={styles.fullScreenButton}>
+                <View style={styles.fullScreen}>
+                    <View style={styles.popup}>
+                        <Text style={styles.gameover}>WAITING FOR PLAYER</Text>
+                    </View>
+                </View>
+            </View>}
             {gameOver && <View style={styles.fullScreenButton}>
                 <View style={styles.fullScreen}>
                     <View style={styles.popup}>
@@ -182,12 +199,14 @@ const styles = StyleSheet.create({
     gameover: {
         color: '#df0772',
         fontSize: 40,
-        fontWeight: 'bold'
-    },
-    gameoverText: {
+        fontWeight: 'bold',
+        textAlign: 'center',
+        whiteSpace: 'norml'
+      },
+      gameoverText: {
         color: '#3E3264',
         fontSize: 18
-    },
+      },
     popup: {
         width: "80%",
         borderRadius: 20,
