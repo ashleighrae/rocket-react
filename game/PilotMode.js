@@ -230,13 +230,18 @@ export default class PilotGameplay extends Component {
     let correctWordPos = posArray.pop();
     let incorrectWordPos = posArray.pop();
     let rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
-    if (this.state.rocketHeight) {
-      rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, this.state.rocketHeight, 70, 50);
-    }
     let floor = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, Constants.MAX_HEIGHT - 25, Constants.MAX_WIDTH, 10, { isStatic: true });
     let ceiling = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 2, 25, Constants.MAX_WIDTH, 50, { isStatic: true });
     let correctWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / correctWordPos, 50, 50, { isStatic: true, isSensor: true });
     let incorrectWord = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 0.7, Constants.MAX_HEIGHT / incorrectWordPos, 50, 50, { isStatic: true, isSensor: true });
+   
+    if (this.state.rocketHeight) {
+      rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, this.state.rocketHeight, 70, 50);
+      if (this.state.rocketHeight > floor.position.y) {
+        rocket = Matter.Bodies.rectangle(Constants.MAX_WIDTH / 6, Constants.MAX_HEIGHT / 2, 70, 50);
+      }
+    }
+
     Matter.World.add(world, [rocket, floor, ceiling, correctWord, incorrectWord]);
 
     Matter.Events.on(engine, 'collisionStart', (event) => {
@@ -262,7 +267,7 @@ export default class PilotGameplay extends Component {
 
     Matter.Events.on(engine, 'afterUpdate', (event) => {
       // If rocket misses word, loose a life
-      if (correctWord.position.x < (rocket.position.x - 100) && !this.state.roundOver) {
+      if ((correctWord.position.x < (rocket.position.x - 100) && !this.state.roundOver)) {
         Matter.World.remove(world, [correctWord]);
         Matter.World.remove(world, [incorrectWord]);
         this.setState({
@@ -493,7 +498,7 @@ const styles = StyleSheet.create({
     padding: '1%',
     top: 60,
     left: '5%',
-    borderRadius: '100',
+    borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 200
