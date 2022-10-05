@@ -357,7 +357,7 @@ export default class PilotGameplay extends Component {
           this.props.navigation.navigate('ModeSelection');
           Translation.PilotStatus(false);
         }} style={styles.close}>
-          <Icon name={'close'} color='white' size='30' />
+          <Icon name={'close'} color='white' style={{fontSize: 30}} />
         </TouchableOpacity>
         {!this.state.running && this.state.gameOver && <TouchableOpacity style={styles.fullScreenButton} onPress={() => { this.resetGame() }}>
           <View style={styles.fullScreen}>

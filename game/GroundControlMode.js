@@ -8,14 +8,14 @@ import TypeWriter from 'react-native-typewriter';
 
 function GroundControl(props) {
 
-    const [word, setWord] = useState("");
-    const [context, setContext] = useState("");
-    const [lives, setLives] = useState();
-    const [score, setScore] = useState();
-    const [status, setStatus] = useState();
-    const [gameOver, setGameOver] = useState();
-    const [correctAnswer, setCorrectAnswer] = useState();
-    const [pilotStatus, setPilotStatus] = useState();
+    const [word, setWord] = useState("waiting...");
+    const [context, setContext] = useState(" ");
+    const [lives, setLives] = useState(null);
+    const [score, setScore] = useState(null);
+    const [status, setStatus] = useState(null);
+    const [gameOver, setGameOver] = useState(null);
+    const [correctAnswer, setCorrectAnswer] = useState(null);
+    const [pilotStatus, setPilotStatus] = useState(null);
 
 
     useEffect(() => {
@@ -82,7 +82,6 @@ function GroundControl(props) {
 
     let livesList = [];
     for (let i = 0; i < lives; i++) {
-
         livesList.push(
             <Image source={require('../assets/img/heart.png')} style={styles.heart} resizeMode="stretch" key={"heart" + i} />
         )
@@ -101,7 +100,7 @@ function GroundControl(props) {
                 Communication.GroundControlStatus(false);
                 props.navigation.navigate('ModeSelection');
             }} style={styles.close}>
-                <Icon name={'close'} color='white' size='30' />
+                <Icon name={'close'} color='white' style={{fontSize: 30}} />
             </TouchableOpacity>
             {!pilotStatus && <View style={styles.fullScreenButton}>
                 <View style={styles.fullScreen}>
@@ -146,16 +145,18 @@ const styles = StyleSheet.create({
         right: 0,
     },
     targetWord: {
-        // position: 'absolute',
+        position: 'absolute',
         color: '#df0772',
         fontSize: 38,
-        marginTop: 220,
+        top: '30%',
         fontWeight: 'bold',
-        width: 230,
+        width:'70%',
         textAlign: 'center',
         whiteSpace: 'norml'
     },
     context: {
+        position: 'absolute',
+        top: '45%',
         color: 'black',
         fontSize: 20,
         fontWeight: 'normal',
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     },
     lives: {
         position: 'absolute',
-        top: 115,
+        top: '14%',
         right: '21%',
         fontWeight: 'bold',
         flexDirection: 'row-reverse',
@@ -180,9 +181,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         color: 'black',
         fontSize: 26,
-        top: 108,
+        top: '13.2%',
         left: '21%',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        backgroundColor: 'white'
     },
     close: {
         backgroundColor: '#FE546F',
