@@ -16,7 +16,7 @@ function GroundControl(props) {
     const [gameOver, setGameOver] = useState(null);
     const [correctAnswer, setCorrectAnswer] = useState(null);
     const [pilotStatus, setPilotStatus] = useState(null);
-
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const db = getDatabase();
@@ -30,6 +30,8 @@ function GroundControl(props) {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/word');
         onValue(reference, (snapshot) => {
+            setIsDeleting(false);
+            setWord("");
             setWord(snapshot.val());
         });
     }, [word]);
@@ -38,6 +40,8 @@ function GroundControl(props) {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/context');
         onValue(reference, (snapshot) => {
+            setIsDeleting(false);
+            setContext("");
             setContext(snapshot.val());
         });
     }, [context]);
@@ -46,10 +50,19 @@ function GroundControl(props) {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/lives');
         onValue(reference, (snapshot) => {
+            setIsDeleting(true);
             setLives(snapshot.val());
         });
         if (lives != 3) {
             setCorrectAnswer(false);
+        }
+
+        const timer = setTimeout(() => {
+            setIsDeleting(false);
+        }, 1000);
+
+        return () => {
+            clearTimeout(timer);
         }
     }, [lives]);
 
@@ -57,10 +70,19 @@ function GroundControl(props) {
         const db = getDatabase();
         const reference = ref(db, '/gameplay/score');
         onValue(reference, (snapshot) => {
+            setIsDeleting(true);
             setScore(snapshot.val());
         });
         if (score != 0) {
             setCorrectAnswer(true);
+        }
+
+        const timer = setTimeout(() => {
+            setIsDeleting(false);
+        }, 1000);
+
+        return () => {
+            clearTimeout(timer);
         }
     }, [score]);
 
@@ -94,13 +116,19 @@ function GroundControl(props) {
             <View style={styles.lives}>
                 {livesList}
             </View>
-            <TypeWriter style={styles.targetWord} typing={1}>{word}</TypeWriter>
-            <TypeWriter style={styles.context} typing={1}>{context}</TypeWriter>
+            {!gameOver && pilotStatus &&
+                <TypeWriter
+                    typing={isDeleting ? -1 : 1}
+                    style={styles.targetWord} >{word}</TypeWriter>}
+            {!gameOver && pilotStatus &&
+                <TypeWriter style={styles.context} typing={isDeleting ? -1 : 1}>{context}</TypeWriter>
+
+            }
             <TouchableOpacity onPress={() => {
                 Communication.GroundControlStatus(false);
                 props.navigation.navigate('ModeSelection');
             }} style={styles.close}>
-                <Icon name={'close'} color='white' style={{fontSize: 30}} />
+                <Icon name={'close'} color='white' style={{ fontSize: 30 }} />
             </TouchableOpacity>
             {!pilotStatus && <View style={styles.fullScreenButton}>
                 <View style={styles.fullScreen}>
@@ -147,10 +175,10 @@ const styles = StyleSheet.create({
     targetWord: {
         position: 'absolute',
         color: '#df0772',
-        fontSize: 38,
+        fontSize: 34,
         top: '30%',
         fontWeight: 'bold',
-        width:'70%',
+        width: '65%',
         textAlign: 'center',
         whiteSpace: 'norml'
     },
@@ -204,11 +232,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         whiteSpace: 'norml'
-      },
-      gameoverText: {
+    },
+    gameoverText: {
         color: '#3E3264',
         fontSize: 18
-      },
+    },
     popup: {
         width: "80%",
         borderRadius: 20,

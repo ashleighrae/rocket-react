@@ -54,7 +54,7 @@ function Home(props) {
     return (
         <View style={styles.background}>
             {(!groundControlStatus && !pilotStatus) &&
-                <View>
+                <View style={{ width: '78%' }}>
                     <Text style={styles.topicHeader}>Select a topic:</Text>
                     <SelectList
                         onSelect={() => Communication.SetTopic(selectedTopic)}
@@ -74,7 +74,8 @@ function Home(props) {
 
                 {(groundControlStatus || pilotStatus) &&
                 <View>
-                    <Text style={styles.topicSelected}>Selected topic: <Text style={styles.topicSelectedWord}>{selectedTopic}</Text></Text>
+                    <Text style={styles.topicSelected}>Selected topic:</Text>
+                    <Text style={styles.topicSelectedWord}>{selectedTopic}</Text>
                 </View>}
 
             <Text style={styles.modeheader}>Select a mode:</Text>
@@ -125,12 +126,18 @@ const styles = StyleSheet.create({
         fontSize: 24,
         width: '95%',
         marginTop: '10%',
-        marginLeft: '-21%',
+        marginLeft: '-23%',
         color: '#000000',
         textAlign: 'left'
     },
     topicSelectedWord: {
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        fontSize: 24,
+        width: '95%',
+        marginTop: '2%',
+        marginLeft: '-23%',
+        color: '#000000',
+        textAlign: 'left'
     },
     modeheader: {
         fontWeight: 'bold',
